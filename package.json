@@ -1,0 +1,29 @@
+{
+	"name": "ximera-sandbox",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tex4npm build"
+	},
+	"dependencies": {
+		"tex4npm": "2.0.0",
+		"@ximera/answer": "2.0.0",
+		"@ximera/choice": "2.0.0",
+		"@ximera/proof": "2.0.0",
+		"@ximera/xkcd": "2.0.0",
+		"@ximera/chrome": "2.0.0",
+		"@ximera/core": "2.0.0",
+		"@ximera/dialogue": "2.0.0",
+		"@ximera/foldable": "2.0.0",
+		"@ximera/free-response": "2.0.0",
+		"@ximera/hint": "2.0.0",
+		"@ximera/multiple-choice": "2.0.0",
+		"@ximera/select-all": "2.0.0",
+		"@ximera/verbatim": "2.0.0",
+		"@ximera/video": "2.0.0",
+		"@ximera/word-choice": "2.0.0"
+	},
+	"overrides": {
+		"@modulus-learning/agent": "0.9.1"
+	}
+}

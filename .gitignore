@@ -1,0 +1,27 @@
+# npm and build output
+node_modules/
+dist/
+.tex4npm/
+
+# LaTeX and TeX4ht temporary files
+*.aux
+*.log
+*.fls
+*.out
+*.toc
+*.dvi
+*.idv
+*.lg
+*.tmp
+*.xref
+*.4ct
+*.4tc
+*.oc
+*.mw
+*.dpth
+*.md5
+*.auxlock
+*.xmjax
+*.xmcss
+*.synctex.gz
+.DS_Store
