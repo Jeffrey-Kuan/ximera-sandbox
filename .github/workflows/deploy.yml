@@ -80,6 +80,16 @@ jobs:
       - name: Build site
         run: npm run build
 
+      # Every page carries an inline rule, ".image-environment img { width:
+      # unset; }", which makes the browser ignore the size given in LaTeX
+      # (\includegraphics[width=...]) and show pictures at full size. Remove
+      # it so the LaTeX size applies; src/custom.css keeps pictures from being
+      # wider than the text.
+      - name: Let picture sizes from LaTeX apply
+        run: |
+          find dist -name '*.html' -exec sed -i 's/\.image-environment img { width: unset; }//' {} +
+          echo "pages still carrying the rule: $(grep -rl --include='*.html' 'image-environment img { width: unset; }' dist | wc -l)"
+
       # Site-specific CSS. Appending it to the bundled stylesheet puts these
       # rules last, so they override the Ximera defaults.
       - name: Add custom CSS

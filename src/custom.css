@@ -3,19 +3,35 @@
 
 /* Never let a picture be wider than the text column. */
 .image-environment img,
-figure img {
+.figure img {
   max-width: 100%;
   height: auto;
 }
 
 /* Rainbow frame around a figure that has a picture, a caption and alt text
-   (the "Show Alt Text" block that \xmalt produces). */
-figure:has(.image-environment):has(figcaption, .caption):has(details),
-.figure:has(.image-environment):has(figcaption, .caption):has(details) {
+   (the "Show Alt Text" block that \xmalt produces). The frame is only as
+   wide as the picture; the caption and alt text wrap to fit inside it. */
+.figure:has(img, object, svg):has(.caption):has(details) {
   border: 8px solid;
   border-image: linear-gradient(
       90deg, #e40303, #ff8c00, #ffed00, #008026, #24408e, #732982
     ) 1;
   padding: 1em;
   margin: 1.5em auto;
+  width: min-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Inside a frame the picture sets the frame's width, so cap it against the
+   window instead of against the frame. */
+.figure:has(.caption):has(details) img {
+  max-width: min(80vw, 600px);
+}
+
+/* The build draws a horizontal line above and below every figure. Hide them. */
+hr.figure,
+hr.endfigure {
+  display: none;
 }
