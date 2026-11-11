@@ -11,6 +11,9 @@ installed on your own computer.
     src/preamble.tex           macros shared by every activity
     src/first-steps/main.tex   one example of each basic question type
     src/lines/main.tex         a short activity with a TikZ picture
+    src/intent/main.tex        test page for MathML intent (screen readers)
+    src/intent.cfg             MathJax setup for intent: \xmunits, \xmabs
+    src/custom.css             site-specific styling
     package.json               the Ximera packages the build uses
     tex4npm.config.js          where sources live (src) and where output goes (dist)
     .github/workflows/deploy.yml   the build, and the optional upload to S3
@@ -49,6 +52,17 @@ Settings > Secrets and variables > Actions:
 The deploy removes files that are no longer part of the site. With a prefix it
 only touches that folder. Without a prefix it covers the whole bucket, so do
 not point a prefix-less deploy at a bucket that holds anything else.
+
+## MathML intent
+
+`src/intent.cfg` makes `\xmunits{cm}` and `\xmabs{x}` (inside math) carry the
+MathML `intent` attribute on the web page, so NVDA or JAWS with MathCAT reads
+them as a unit and as an absolute value. It also turns on MathJax's assistive
+MathML for every formula on the site. The build inserts the file into
+`ximera.cfg`; delete `src/intent.cfg` to switch all of this off.
+
+The commands are only defined for the web page. The PDF pass of the build
+reports them as undefined and carries on.
 
 ## Workarounds in this repository
 

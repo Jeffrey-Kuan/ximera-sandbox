@@ -66,6 +66,21 @@ jobs:
           sed -i "/\$('img\[src\]').each((_, el) => rewrite(el, 'src'));/d" "$f"
           if grep -q "img\[src\]').each((_, el) => rewrite" "$f"; then echo "image-link patch did not apply"; exit 1; fi
 
+      # MathML intent for screen readers. src/intent.cfg holds a MathJax
+      # configuration that defines \xmunits, \xmabs and the two building
+      # blocks \MathMLintent and \MathMLarg, and switches on MathJax's
+      # assistive MathML. ximera.cfg comes from the @ximera/core package, so
+      # the lines are inserted into the installed copy, just before
+      # \begin{document}.
+      - name: Add MathML intent configuration
+        run: |
+          f=node_modules/@ximera/core/latex/dist/ximera.cfg
+          if [ -f src/intent.cfg ]; then
+            awk 'FNR==NR{a[n++]=$0; next} /^\\begin\{document\}/{for(i=0;i<n;i++) print a[i]} {print}' src/intent.cfg "$f" > "$f.new"
+            mv "$f.new" "$f"
+            grep -q "xmintent" "$f"
+          fi
+
       # The web build cannot read the size of a PNG or JPG by itself. Without
       # a .xbb file next to the picture it assumes the picture is square, which
       # distorts it. Create the missing .xbb files; ones committed to the

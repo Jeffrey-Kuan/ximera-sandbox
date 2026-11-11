@@ -1,0 +1,34 @@
+\documentclass{ximera}
+\input{../preamble.tex}
+
+\title{Math Intent}
+
+\begin{document}
+\begin{abstract}
+Testing MathML intent for screen readers.
+\end{abstract}
+\maketitle
+
+Each formula below should be read by NVDA with MathCAT as described.
+
+An absolute value, read ``the absolute value of x minus 3'': $\xmabs{x-3}$.
+
+A unit, read ``5 inches'': $5\,\xmunits{in}$.
+
+A unit with a power, read ``130 centimeters cubed'':
+\[
+V = 130\,\xmunits{cm}^3 .
+\]
+
+A compound unit, read ``10 meters per second'': $10\,\xmunits{m}/\xmunits{s}$.
+
+A unit with a name of its own, read ``2 square feet'': $2\,\xmunits[square-feet]{sq.~ft.}$
+
+For comparison, the same bars with no intent: $|x-3|$.
+
+\begin{problem}
+An answer box next to a unit: the square has side $\answer{4}\,\xmunits{cm}$
+when its area is $16\,\xmunits{cm}^2$.
+\end{problem}
+
+\end{document}
