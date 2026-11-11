@@ -66,6 +66,17 @@ jobs:
           sed -i "/\$('img\[src\]').each((_, el) => rewrite(el, 'src'));/d" "$f"
           if grep -q "img\[src\]').each((_, el) => rewrite" "$f"; then echo "image-link patch did not apply"; exit 1; fi
 
+      # The web build cannot read the size of a PNG or JPG by itself. Without
+      # a .xbb file next to the picture it assumes the picture is square, which
+      # distorts it. Create the missing .xbb files; ones committed to the
+      # repository are left alone.
+      - name: Create size files for pictures
+        run: |
+          find src -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | while read -r f; do
+            [ -f "${f%.*}.xbb" ] || (cd "$(dirname "$f")" && extractbb "$(basename "$f")")
+          done
+          echo "size files present: $(find src -name '*.xbb' | wc -l)"
+
       - name: Build site
         run: npm run build
 

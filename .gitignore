@@ -25,3 +25,4 @@ dist/
 *.xmcss
 *.synctex.gz
 .DS_Store
+*.xbb
