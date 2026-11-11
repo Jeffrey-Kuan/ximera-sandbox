@@ -55,6 +55,17 @@ jobs:
           sed -i "s/'span.mathjax-inline, div.mathjax-block'/'span.mathjax-inline, div.mathjax-block, span.mathjax-block'/" "$f"
           grep -q "div.mathjax-block, span.mathjax-block" "$f"
 
+      # Workaround for tex4npm 2.0.0. For the copy of each activity inside a
+      # course folder, it copies the page's images next to the copy, and then
+      # also adds "../" to every <img src>, so the link points one folder too
+      # high and photos show as broken. Remove the "../" rewrite for images.
+      # Remove this step once tex4npm is fixed.
+      - name: Patch image links in course copies
+        run: |
+          f=node_modules/tex4npm/src/xourse.js
+          sed -i "/\$('img\[src\]').each((_, el) => rewrite(el, 'src'));/d" "$f"
+          if grep -q "img\[src\]').each((_, el) => rewrite" "$f"; then echo "image-link patch did not apply"; exit 1; fi
+
       - name: Build site
         run: npm run build
 

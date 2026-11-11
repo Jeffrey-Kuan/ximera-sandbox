@@ -61,6 +61,9 @@ once fixed versions are released.
 - `package.json` pins `math-expressions` to 2.0.0-alpha96, the version the
   answer checker was written against. The newer 3.0.0 alpha is a rewrite, and
   with it correct answers were marked wrong.
+- The workflow patches `tex4npm` after install. Without the patch, photos
+  (PNG or JPG) show as broken on the copy of each activity that sits inside a
+  course folder, because the image link points one folder too high.
 - The workflow patches `@ximera/answer` after install. Without the patch,
   `\answer` inside display math is not turned into an input box and shows up
   on the page as a red `\answer`.
