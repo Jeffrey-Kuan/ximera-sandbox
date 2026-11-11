@@ -69,6 +69,15 @@ jobs:
       - name: Build site
         run: npm run build
 
+      # Site-specific CSS. Appending it to the bundled stylesheet puts these
+      # rules last, so they override the Ximera defaults.
+      - name: Add custom CSS
+        run: |
+          if [ -f src/custom.css ]; then
+            printf '\n/* ---- src/custom.css ---- */\n' >> dist/ximera.css
+            cat src/custom.css >> dist/ximera.css
+          fi
+
       - name: Sanity check
         run: |
           test -s dist/ximera.js

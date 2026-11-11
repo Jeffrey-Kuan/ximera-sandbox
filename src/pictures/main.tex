@@ -1,0 +1,30 @@
+\documentclass{ximera}
+\input{../preamble.tex}
+
+\title{Pictures, Captions and Alt Text}
+
+\begin{document}
+\begin{abstract}
+A picture with a caption and alt text, used to test image styling.
+\end{abstract}
+\maketitle
+
+The figure below has both a caption and alt text, so the site's custom
+stylesheet (\texttt{src/custom.css}) draws a rainbow frame around it.
+
+\begin{figure}
+\begin{image}
+  \includegraphics[width=4in]{sample.png}
+\end{image}
+\caption{A sample picture: a rectangle shaded from blue to orange.}
+\xmalt{A rectangle filled with a smooth colour gradient, blue on the left and orange on the right.}
+\end{figure}
+
+This second picture has alt text but no caption, so it gets no frame.
+
+\begin{image}
+  \includegraphics[width=2in]{sample.png}
+  \xmalt{The same gradient rectangle, shown smaller.}
+\end{image}
+
+\end{document}

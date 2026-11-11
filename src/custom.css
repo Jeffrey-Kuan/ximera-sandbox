@@ -1,0 +1,21 @@
+/* Site-specific styling. The build adds this file to the end of ximera.css,
+   so rules here override the Ximera defaults. Edit freely. */
+
+/* Never let a picture be wider than the text column. */
+.image-environment img,
+figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Rainbow frame around a figure that has a picture, a caption and alt text
+   (the "Show Alt Text" block that \xmalt produces). */
+figure:has(.image-environment):has(figcaption, .caption):has(details),
+.figure:has(.image-environment):has(figcaption, .caption):has(details) {
+  border: 8px solid;
+  border-image: linear-gradient(
+      90deg, #e40303, #ff8c00, #ffed00, #008026, #24408e, #732982
+    ) 1;
+  padding: 1em;
+  margin: 1.5em auto;
+}
