@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ximera \answer{} — answer box, before (stock)</title>
+
+<!-- 1. MathJax 4 config. @ximera/answer needs the `html` TeX extension
+        (it provides \cssId, which the build uses to tag the answer slot).
+        This is exactly what @ximera/answer/postprocess.js injects. -->
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/html'] },
+    tex: {
+      packages: { '[+]': ['html'] },
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']]
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" id="MathJax-script" async></script>
+
+<!-- 2. Ximera's CSS (core defines the --ximera-* variables the answer CSS uses). -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ximera/core@2.0.0/ximera-core.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ximera/answer@2.0.0/ximera-answer.css">
+
+<!-- 3. Import map: the packages are plain ES modules with bare imports
+        (@ximera/answer -> @ximera/core/kernel + math-expressions;
+         @ximera/core -> @modulus-learning/agent). Versions pinned. -->
+<script type="importmap">
+{
+  "imports": {
+    "@ximera/answer":          "https://cdn.jsdelivr.net/npm/@ximera/answer@2.0.0/index.js",
+    "@ximera/core":            "https://cdn.jsdelivr.net/npm/@ximera/core@2.0.0/index.js",
+    "@ximera/core/kernel":     "https://cdn.jsdelivr.net/npm/@ximera/core@2.0.0/kernel.js",
+    "math-expressions":        "https://cdn.jsdelivr.net/npm/math-expressions@2.0.0-alpha96/build/math-expressions.js",
+    "@modulus-learning/agent": "https://cdn.jsdelivr.net/npm/@modulus-learning/agent@0.9.1/dist/core/index.js"
+  }
+}
+</script>
+
+<!-- 4. Load the component first (registers its mount/reducer/render with the
+        kernel at module load), then core (whose entry auto-boots the kernel
+        with a Modulus agent; with no launch context it runs locally). -->
+<script type="module">
+  import '@ximera/answer';
+  import '@ximera/core';
+</script>
+
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; line-height: 1.5; }
+  .problem-environment { padding: 1rem 1.25rem; border: 1px solid #ccc; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h1>\answer{} via the real Ximera runtime: before</h1>
+<p>Stock answer box. No assistive MathML, no intent setup.</p>
+
+<!-- 5. Hand-written equivalent of what tex4npm + @ximera/answer/postprocess.js
+        emit for:
+
+          \begin{problem}
+            Expand \((x+8)(x-1)\).
+            \[ (x+8)(x-1) = \answer{x^2+7x-8} \]
+          \end{problem}
+
+        In a real build the \answer is rewritten into the \cssId'd \phantom and
+        the hidden state-holder span below. The phantom reserves a slot of the
+        answer's width; the runtime overlays the input on it. -->
+<div class="problem-environment">
+  <p>Expand <span class="mathjax-inline">\( (x+8)(x-1) \)</span>.</p>
+
+  <div class="ximera-math-with-answers">
+    <div class="mathjax-block">
+      \[ (x+8)(x-1) = \cssId{ximera-placeholder-1}{\phantom{x^2+7x-8\hspace{0.5em}\vphantom{\bigg|}}} \]
+    </div>
+    <span class="answer respondable"
+          id="ximera-answer-1"
+          data-placeholder-id="ximera-placeholder-1"
+          data-correct-text="x^2+7x-8"
+          style="display:none"></span>
+  </div>
+</div>
+
+<p style="margin-top:1.5rem;font-size:0.9em;color:#444">
+  Try <code>x^2+7x-8</code>, <code>7x+x^2-8</code>, <code>(x+8)(x-1)</code> (all correct)
+  and <code>x^2+7x-9</code> (incorrect). Enter or the Check button grades;
+  a live preview popover appears while typing.
+</p>
+
+</body>
+</html>

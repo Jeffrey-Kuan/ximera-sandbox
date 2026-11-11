@@ -14,6 +14,9 @@ installed on your own computer.
     src/intent/main.tex        test page for MathML intent (screen readers)
     src/intent.cfg             MathJax setup for intent: \xmunits, \xmabs
     src/custom.css             site-specific styling
+    static/                    hand-written pages, copied into the site as they are
+    static/answer-box/         the stock answer box on its own page, without (before)
+                               and with (after) MathJax's assistive MathML
     package.json               the Ximera packages the build uses
     tex4npm.config.js          where sources live (src) and where output goes (dist)
     .github/workflows/deploy.yml   the build, and the optional upload to S3

@@ -114,6 +114,17 @@ jobs:
             cat src/custom.css >> dist/ximera.css
           fi
 
+      # Hand-written pages. Everything under static/ is copied into the site
+      # as it is, so static/answer-box/after.html is published as
+      # answer-box/after.html. A folder here must not share its name with a
+      # folder under src/.
+      - name: Add static pages
+        run: |
+          if [ -d static ]; then
+            cp -R static/. dist/
+            echo "static files added: $(find static -type f | wc -l)"
+          fi
+
       - name: Sanity check
         run: |
           test -s dist/ximera.js
