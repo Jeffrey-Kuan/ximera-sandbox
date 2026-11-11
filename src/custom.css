@@ -35,3 +35,10 @@ hr.figure,
 hr.endfigure {
   display: none;
 }
+
+/* Alt text from \xmalt: left-aligned, both the "Show Alt Text" toggle and
+   the text it reveals, even where the picture around it is centred. */
+.image-environment details,
+.figure details {
+  text-align: left;
+}
