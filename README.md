@@ -52,12 +52,15 @@ not point a prefix-less deploy at a bucket that holds anything else.
 
 ## Workarounds in this repository
 
-Both work around problems in the published 2.0.0 packages and can be removed
+These work around problems in the published 2.0.0 packages and can be removed
 once fixed versions are released.
 
 - `package.json` pins `@modulus-learning/agent` to 0.9.1. `@ximera/core` 2.0.0
   imports a `ModulusAgent` class that later agent versions replaced, so the
   build fails without the pin.
+- `package.json` pins `math-expressions` to 2.0.0-alpha96, the version the
+  answer checker was written against. The newer 3.0.0 alpha is a rewrite, and
+  with it correct answers were marked wrong.
 - The workflow patches `@ximera/answer` after install. Without the patch,
   `\answer` inside display math is not turned into an input box and shows up
   on the page as a red `\answer`.
