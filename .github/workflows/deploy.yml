@@ -1,4 +1,8 @@
-# Build the Ximera site with tex4npm, and publish dist/ to S3 if a bucket is set.
+# Build the Ximera site with tex4npm, publish it to GitHub Pages, and also to
+# S3 if a bucket is set.
+#
+# GitHub Pages needs no secrets. It must be switched on once under
+# Settings > Pages, with "GitHub Actions" as the source.
 #
 # Every push and pull request builds the site. Deploying is optional: it only
 # happens on pushes to the default branch, and only when the S3_BUCKET variable
@@ -22,6 +26,8 @@ concurrency:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -125,6 +131,14 @@ jobs:
             echo "static files added: $(find static -type f | wc -l)"
           fi
 
+      # The build has no start page. Send visitors of the site's address to
+      # the course page.
+      - name: Add start page
+        run: |
+          if [ ! -f dist/index.html ]; then
+            printf '%s\n' '<!DOCTYPE html>' '<html lang="en"><head><meta charset="utf-8">' '<title>Ximera Sandbox</title>' '<meta http-equiv="refresh" content="0; url=sandbox.html">' '</head><body><p><a href="sandbox.html">Ximera Sandbox</a></p></body></html>' > dist/index.html
+          fi
+
       - name: Sanity check
         run: |
           test -s dist/ximera.js
@@ -138,6 +152,12 @@ jobs:
           grep -rl --include='*.html' '\\answer' dist > /tmp/unconverted.txt || true
           echo "HTML pages still containing a literal \\answer: $(wc -l < /tmp/unconverted.txt)"
           head -20 /tmp/unconverted.txt
+
+      - name: Upload site for GitHub Pages
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
       - name: Configure AWS credentials
         if: vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
@@ -161,3 +181,15 @@ jobs:
           else
             npx tex4npm deploy "$S3_BUCKET" --delete
           fi
+
+  pages:
+    name: Publish to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
