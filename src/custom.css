@@ -42,3 +42,37 @@ hr.endfigure {
 .figure details {
   text-align: left;
 }
+
+/* ---- Answer boxes and screen readers (goes with static/answer-a11y.js) ---- */
+
+/* Stock Ximera clips whatever hangs below displayed math, which cuts off the
+   preview shown while typing an answer. Let it show when the math holds an
+   answer box. */
+.mathjax-block:has(.ximera-input-group),
+.mathjax-env:has(.ximera-input-group) {
+  overflow: visible;
+}
+
+/* The line written after an answer is checked. */
+.ximera-answer-feedback {
+  display: block;
+  margin: 0.5em 0;
+  font-weight: bold;
+  text-align: left;
+}
+.ximera-answer-feedback math { font-weight: normal; font-size: 1.1em; }
+.ximera-answer-feedback[data-kind="correct"]   { color: #2e7d32; }
+.ximera-answer-feedback[data-kind="incorrect"] { color: #b00020; }
+
+/* Present for screen readers, not shown on screen. */
+.ximera-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
