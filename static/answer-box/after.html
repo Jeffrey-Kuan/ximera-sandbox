@@ -74,6 +74,9 @@
       try { latex = Expression.fromLatex(text).tex(); }
       catch { return text; }
     }
+    // Where something is missing ("x^2+7x-") the parser puts a "＿" mark,
+    // which would be spoken as "bar". Say "blank" instead.
+    latex = latex.replaceAll('\uff3f', '\\text{blank}');
     const holder = document.createElement('span');
     holder.textContent = `\\(${latex}\\)`;
     scratch.appendChild(holder);
@@ -136,7 +139,9 @@
     setTimeout(async () => {
       const state = btn.dataset.state;
       if (state !== 'correct' && state !== 'attempted') return;
-      const words = await spoken(text);
+      // A text answer (format=string) is read as typed, not as math.
+      const answer = document.getElementById(input.dataset.answerId);
+      const words = answer?.dataset.format === 'string' ? text : await spoken(text);
       if (state === 'correct') {
         input.setAttribute('aria-invalid', 'false');
         announce(out, `${words} is correct!`, 'correct');
