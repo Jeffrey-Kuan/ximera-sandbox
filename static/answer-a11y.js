@@ -21,6 +21,11 @@
 //     separate, invisible live region holding MathJax's speech for the
 //     answer ("x squared plus 7 x minus 9 is not correct"). The same
 //     sentence is the input's description.
+//
+// (c) Answer boxes inside a matrix or a vector. Every box would be called
+//     just "answer". The script adds the position to the name of the box and
+//     of its Check button ("answer, row 1, column 2"), and to the feedback
+//     ("Row 1, column 2: 20 is not correct").
 
 // The parser that turns typed text into LaTeX. It is the one the answer box
 // uses, in the same version, but that copy is sealed inside ximera.js, so a
@@ -46,9 +51,39 @@ function setHidden(el, hidden) {
   else if (el.hasAttribute('aria-hidden')) el.removeAttribute('aria-hidden');
 }
 
+// Where a box sits, if it is inside a matrix or a vector: MathJax marks those
+// with data-semantic-type. Tables used only for layout (aligned equations,
+// cases) are not marked that way and get no position.
+function position(group) {
+  const cell = group.closest('mjx-mtd');
+  const row = cell?.closest('mjx-mtr, mjx-mlabeledtr');
+  const kind = cell?.closest('[data-semantic-type="matrix"], [data-semantic-type="vector"]');
+  if (!cell || !row || !kind) return null;
+  const isRow = (el) => el.matches('mjx-mtr, mjx-mlabeledtr');
+  const rows = [...row.parentElement.children].filter(isRow);
+  const cells = [...row.children].filter((el) => el.matches('mjx-mtd'));
+  const r = rows.indexOf(row) + 1;
+  const c = cells.indexOf(cell) + 1;
+  if (rows.length > 1 && cells.length > 1) return `row ${r}, column ${c}`;
+  if (rows.length > 1) return `entry ${r} of ${rows.length}`;
+  if (cells.length > 1) return `entry ${c} of ${cells.length}`;
+  return null;
+}
+
+function setName(el, name) {
+  if (el && el.getAttribute('aria-label') !== name) el.setAttribute('aria-label', name);
+}
+
 function expose(container) {
   const groups = [...container.querySelectorAll('.ximera-input-group')];
   if (groups.length === 0) return;
+  for (const group of groups) {
+    const where = position(group);
+    if (!where) continue;
+    group.dataset.position = where;
+    setName(group.querySelector('.ximera-answer-input'), `answer, ${where}`);
+    setName(group.querySelector('.ximera-check-btn'), `check work, ${where}`);
+  }
   // Every element between the formula's container and an answer box.
   const chain = new Set();
   for (const group of groups) {
@@ -199,8 +234,11 @@ async function announce(sentence) {
 function show(input, shown, said, verdict, kind) {
   const { line, description } = feedbackFor(input);
   line.dataset.kind = kind;
-  line.replaceChildren(...(shown === '' ? [verdict] : [shown, ' ' + verdict]));
-  const sentence = said === '' ? verdict : `${said} ${verdict}`;
+  // Inside a matrix, say which entry this is about.
+  const where = input.closest('.ximera-input-group')?.dataset.position;
+  const lead = where ? where[0].toUpperCase() + where.slice(1) + ': ' : '';
+  line.replaceChildren(...(shown === '' ? [lead + verdict] : [lead, shown, ' ' + verdict]));
+  const sentence = lead + (said === '' ? verdict : `${said} ${verdict}`);
   description.textContent = sentence;
   announce(sentence);
 }

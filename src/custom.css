@@ -46,11 +46,22 @@ hr.endfigure {
 /* ---- Answer boxes and screen readers (goes with static/answer-a11y.js) ---- */
 
 /* Stock Ximera clips whatever hangs below displayed math, which cuts off the
-   preview shown while typing an answer. Let it show when the math holds an
-   answer box. */
+   preview shown while typing an answer. Displayed math must stay able to
+   scroll sideways (a wide matrix of answer boxes needs it), so the clipping
+   cannot simply be switched off. Instead, when the math holds an answer box,
+   the block is made taller at the bottom so the preview is inside it, and
+   pulled back up by the same amount so nothing around it moves. */
 .mathjax-block:has(.ximera-input-group),
 .mathjax-env:has(.ximera-input-group) {
-  overflow: visible;
+  padding-bottom: 4.5em;
+  margin-bottom: -3.6em;
+}
+
+/* Answer boxes inside a matrix: Ximera makes every box at least 10em wide,
+   which makes even a small matrix very wide. Entries are short, so allow
+   narrower boxes there. */
+mjx-mtd [id^="ximera-placeholder"] {
+  min-width: 6.5em !important;
 }
 
 /* The line written after an answer is checked. */

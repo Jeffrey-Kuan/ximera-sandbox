@@ -12,6 +12,7 @@ installed on your own computer.
     src/first-steps/main.tex   one example of each basic question type
     src/lines/main.tex         a short activity with a TikZ picture
     src/intent/main.tex        test page for MathML intent (screen readers)
+    src/matrices/main.tex      answer boxes inside matrices and vectors
     src/intent.cfg             MathJax setup for intent: \xmunits, \xmabs
     src/custom.css             site-specific styling
     static/                    hand-written pages, copied into the site as they are
