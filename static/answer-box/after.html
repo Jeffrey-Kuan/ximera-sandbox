@@ -46,24 +46,92 @@
   import '@ximera/core';
 </script>
 
-<!-- 4b. Screen reader feedback (not part of stock Ximera). When an answer is
-        checked, a line is written after the math: the student's answer as
-        MathML, followed by the verdict, for example
-            <math>x^2+7x-9</math> is not correct - try again.
-        The line is an <output aria-live="polite">, outside MathJax's
-        aria-hidden output. Because the answer is real MathML and not a
-        ready-made English sentence, the screen reader (NVDA with MathCAT,
-        JAWS, ...) reads it with the user's own speech and braille settings.
-        The browser also shows the line, using its native MathML rendering.
-        The input gets aria-invalid and aria-describedby. -->
+<!-- 4b. Screen reader support (not part of stock Ximera).
+
+        What a screen reader gets from MathJax 4 on this page is one element
+        per formula, <mjx-speech role="img" aria-label="...">, holding
+        MathJax's own speech. The typeset formula, and the assistive MathML,
+        are both aria-hidden. Two consequences are handled here.
+
+        (a) The answer box lives inside the typeset formula, so it is hidden
+            too: Tab reaches it, reading with the arrow keys does not. The
+            script takes aria-hidden off the chain of elements leading to the
+            box and puts it on everything beside that chain instead, and
+            moves the speech element first, so the reading order is: the
+            formula, then the edit box, then the Check button.
+
+        (b) Feedback after checking. A line is written after the math: the
+            student's answer as MathML, then the verdict. NVDA reads a live
+            region as plain text ("x 2" for x squared), so the announcement
+            itself is a separate, invisible live region holding MathJax's
+            speech for the answer ("x squared plus 7 x minus 9 is not
+            correct"). The same sentence is the input's description. -->
 <script type="module">
   import Expression from 'math-expressions';
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Typed text -> LaTeX (same parser and fallback order as the answer box)
-  // -> a <math> element. Returns null when the text cannot be read as math.
-  async function toMathML(text) {
+  // ---- (a) make the answer box reachable in browse mode ------------------
+
+  function setHidden(el, hidden) {
+    if (hidden) { if (el.getAttribute('aria-hidden') !== 'true') el.setAttribute('aria-hidden', 'true'); }
+    else if (el.hasAttribute('aria-hidden')) el.removeAttribute('aria-hidden');
+  }
+
+  function expose(container) {
+    const groups = [...container.querySelectorAll('.ximera-input-group')];
+    if (groups.length === 0) return;
+    // Every element between the formula's container and an answer box.
+    const chain = new Set();
+    for (const group of groups) {
+      for (let n = group.parentElement; n && n !== container; n = n.parentElement) chain.add(n);
+    }
+    for (const el of chain) {
+      setHidden(el, false);
+      for (const child of el.children) {
+        if (chain.has(child) || groups.includes(child)) continue;
+        if (child.classList.contains('ximera-math-popover')) continue;
+        setHidden(child, true);
+      }
+    }
+    const speech = container.querySelector(':scope > mjx-speech');
+    if (speech && container.firstElementChild !== speech) container.prepend(speech);
+  }
+
+  let exposeTimer;
+  function exposeAll() {
+    clearTimeout(exposeTimer);
+    exposeTimer = setTimeout(() => {
+      const containers = new Set();
+      for (const group of document.querySelectorAll('mjx-container .ximera-input-group')) {
+        containers.add(group.closest('mjx-container'));
+      }
+      containers.forEach(expose);
+    }, 50);
+  }
+  // The box is mounted, and MathJax attaches its speech, some time after the
+  // page loads; MathJax may also put aria-hidden back. Re-apply when needed.
+  new MutationObserver(exposeAll).observe(document.documentElement, {
+    childList: true, subtree: true, attributes: true, attributeFilter: ['aria-hidden'],
+  });
+  exposeAll();
+
+  // ---- (b) feedback --------------------------------------------------------
+
+  const live = document.createElement('div');
+  live.className = 'ximera-sr-only';
+  live.setAttribute('role', 'status');
+  live.setAttribute('aria-live', 'polite');
+  live.setAttribute('aria-atomic', 'true');
+  // Off-screen place where MathJax typesets the answer to obtain its speech.
+  const scratch = document.createElement('div');
+  scratch.className = 'ximera-sr-only';
+  scratch.setAttribute('aria-hidden', 'true');
+  document.body.append(live, scratch);
+
+  // Typed text -> LaTeX, with the same parser and fallback order as the
+  // answer box. Returns null when the text cannot be read as math.
+  function toLatex(text) {
     let latex;
     try { latex = Expression.fromText(text).tex(); }
     catch {
@@ -71,8 +139,10 @@
       catch { return null; }
     }
     // Where something is missing ("x^2+7x-") the parser puts a "＿" mark.
-    // Write the word "blank" there instead.
-    latex = latex.replaceAll('＿', '\\text{blank}');
+    return latex.replaceAll('＿', '\\text{blank}');
+  }
+
+  async function toMathML(latex) {
     try {
       const mml = await window.MathJax.tex2mmlPromise(latex, { display: false });
       const box = document.createElement('template');
@@ -94,31 +164,64 @@
     } catch { return null; }
   }
 
-  // One feedback line per answer box, created on first use and placed right
-  // after the math that holds the box.
-  function feedbackFor(input) {
-    const id = input.dataset.answerId + '-feedback';
-    let out = document.getElementById(id);
-    if (!out) {
-      out = document.createElement('output');
-      out.id = id;
-      out.className = 'ximera-answer-feedback';
-      out.setAttribute('aria-live', 'polite');
-      out.setAttribute('aria-atomic', 'true');
-      const answer = document.getElementById(input.dataset.answerId);
-      (answer ?? input.closest('mjx-container')).after(out);
-      input.setAttribute('aria-describedby', id);
+  // MathJax's speech for the expression, the same wording a screen reader
+  // hears for the other formulas on the page.
+  async function toSpeech(latex) {
+    const holder = document.createElement('span');
+    holder.textContent = `\\(${latex}\\)`;
+    scratch.appendChild(holder);
+    try {
+      await window.MathJax.typesetPromise([holder]);
+      // Speech is produced in a web worker after typesetting.
+      for (let i = 0; i < 60; i++) {
+        const label = holder.querySelector('mjx-container')?.getAttribute('data-semantic-speech-none');
+        if (label) return label;
+        await sleep(50);
+      }
+    } catch { /* no speech */ }
+    finally {
+      try { window.MathJax.typesetClear?.([holder]); } catch { /* ignore */ }
+      holder.remove();
     }
-    return out;
+    return null;
   }
 
-  // Clear, then refill, so an identical message is announced again.
-  // `parts` are strings or nodes.
-  async function announce(out, parts, kind) {
-    out.replaceChildren();
-    out.dataset.kind = kind;
-    await sleep(50);
-    out.replaceChildren(...parts);
+  // Per answer box: a visible line after the math, and a hidden sentence
+  // that serves as the input's description.
+  function feedbackFor(input) {
+    const id = input.dataset.answerId + '-feedback';
+    let line = document.getElementById(id);
+    if (!line) {
+      line = document.createElement('div');
+      line.id = id;
+      line.className = 'ximera-answer-feedback';
+      const description = document.createElement('span');
+      description.id = id + '-description';
+      description.hidden = true;
+      const answer = document.getElementById(input.dataset.answerId);
+      (answer ?? input.closest('mjx-container')).after(line, description);
+      input.setAttribute('aria-describedby', description.id);
+    }
+    return { line, description: document.getElementById(id + '-description') };
+  }
+
+  let clearTimer;
+  async function announce(sentence) {
+    clearTimeout(clearTimer);
+    live.textContent = '';
+    await sleep(50);                  // empty -> text, so a repeat is announced
+    live.textContent = sentence;
+    // Once spoken, take it away so it is not met again when reading the page.
+    clearTimer = setTimeout(() => { live.textContent = ''; }, 4000);
+  }
+
+  function show(input, shown, said, verdict, kind) {
+    const { line, description } = feedbackFor(input);
+    line.dataset.kind = kind;
+    line.replaceChildren(...(shown === '' ? [verdict] : [shown, ' ' + verdict]));
+    const sentence = said === '' ? verdict : `${said} ${verdict}`;
+    description.textContent = sentence;
+    announce(sentence);
   }
 
   // Speak only when the student actually checks (Enter or the Check button),
@@ -128,10 +231,9 @@
     const btn = group?.querySelector('.ximera-check-btn');
     if (!input || !btn) return;
     const text = input.value.trim();
-    const out = feedbackFor(input);
     if (text === '') {
       input.removeAttribute('aria-invalid');
-      announce(out, ['Please enter an answer.'], 'incorrect');
+      show(input, '', '', 'Please enter an answer.', 'incorrect');
       return;
     }
     setTimeout(async () => {
@@ -140,15 +242,14 @@
       // A text answer (format=string), or input that is not math, is given
       // as typed.
       const answer = document.getElementById(input.dataset.answerId);
-      const math = answer?.dataset.format === 'string' ? null : await toMathML(text);
-      const said = math ?? text;
-      if (state === 'correct') {
-        input.setAttribute('aria-invalid', 'false');
-        announce(out, [said, ' is correct!'], 'correct');
-      } else {
-        input.setAttribute('aria-invalid', 'true');
-        announce(out, [said, ' is not correct — try again.'], 'incorrect');
-      }
+      const latex = answer?.dataset.format === 'string' ? null : toLatex(text);
+      const math = latex ? await toMathML(latex) : null;
+      const speech = latex ? await toSpeech(latex) : null;
+      const correct = state === 'correct';
+      input.setAttribute('aria-invalid', correct ? 'false' : 'true');
+      show(input, math ?? text, speech ?? text,
+        correct ? 'is correct!' : 'is not correct — try again.',
+        correct ? 'correct' : 'incorrect');
     }, 100);
   }
 
@@ -175,6 +276,12 @@
 
   .ximera-answer-feedback { display: block; margin-top: 0.75rem; font-weight: bold; text-align: left; }
   .ximera-answer-feedback math { font-weight: normal; font-size: 1.1em; }
+
+  /* Present for screen readers, not shown on screen. */
+  .ximera-sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
   .ximera-answer-feedback[data-kind="correct"]   { color: #2e7d32; }
   .ximera-answer-feedback[data-kind="incorrect"] { color: #b00020; }
 </style>
@@ -183,8 +290,9 @@
 
 <h1>\answer{} via the real Ximera runtime: after</h1>
 <p>Same answer box, with MathJax's assistive MathML switched on, as the sandbox's intent setup does.
-   Two additions: the typing preview is no longer cut off, and checking an answer writes a line
-   below the math with the answer as MathML followed by the verdict, for a screen reader to read.</p>
+   Three additions: the typing preview is no longer cut off; a screen reader meets the answer box
+   when reading through the problem with the arrow keys; and checking an answer writes a line below
+   the math (the answer as MathML, then the verdict) and announces it.</p>
 
 <!-- 5. Hand-written equivalent of what tex4npm + @ximera/answer/postprocess.js
         emit for:
