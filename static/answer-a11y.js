@@ -4,22 +4,24 @@
 // the two lines to the MathJax configuration that do so. Authors keep
 // writing \answer{...} as before. Styling is in src/custom.css.
 //
-// What a screen reader gets from MathJax 4 is one element per formula,
-// <mjx-speech role="img" aria-label="...">, holding MathJax's own speech.
-// The typeset formula and the assistive MathML are both aria-hidden.
+// This site switches MathJax's own speech off (src/intent.cfg), so what a
+// screen reader gets for a formula is MathJax's assistive MathML; the
+// typeset formula beside it is aria-hidden. If a reader switches speech on
+// in the MathJax menu, there is instead one <mjx-speech role="img"> element
+// holding MathJax's speech, and both the typeset formula and the MathML are
+// aria-hidden. The script works in both cases.
 //
-// (a) The answer box lives inside the typeset formula, so it is hidden too:
+// (a) The answer box lives inside the typeset formula, so it is hidden:
 //     Tab reaches it, reading with the arrow keys does not. This script
 //     takes aria-hidden off the chain of elements leading to the box and
-//     puts it on everything beside that chain instead, and moves the speech
-//     element first, so the reading order is: the formula, then the edit
-//     box, then the Check button.
+//     puts it on everything beside that chain instead, so the reading order
+//     is: the formula, then the edit box, then the Check button.
 //
 // (b) Feedback after checking. A line is written near the math: the
 //     student's answer as MathML, then the verdict. NVDA reads a live region
 //     as plain text ("x 2" for x squared), so the announcement itself is a
-//     separate, invisible live region holding MathJax's speech for the
-//     answer ("x squared plus 7 x minus 9 is not correct"). The same
+//     separate, invisible live region holding words for the answer, taken
+//     from MathJax's speech generator ("x squared plus 7 x minus 9 is not correct"). The same
 //     sentence is the input's description.
 //
 // (c) Answer boxes inside a matrix or a vector. Every box would be called
@@ -97,8 +99,12 @@ function expose(container) {
       setHidden(child, true);
     }
   }
-  const speech = container.querySelector(':scope > mjx-speech');
-  if (speech && container.firstElementChild !== speech) container.prepend(speech);
+  // What the screen reader reads for the formula goes first: MathJax's
+  // speech if the reader switched it on, otherwise the assistive MathML
+  // (which is laid over the formula, so moving it changes nothing on screen).
+  const spoken = container.querySelector(':scope > mjx-speech')
+    ?? container.querySelector(':scope > mjx-assistive-mml');
+  if (spoken && container.firstElementChild !== spoken) container.prepend(spoken);
 }
 
 let exposeTimer;
@@ -175,6 +181,11 @@ async function toSpeech(latex) {
   const holder = document.createElement('span');
   holder.textContent = `\\(${latex}\\)`;
   scratch.appendChild(holder);
+  // The site keeps MathJax's speech switched off, so that a screen reader
+  // is given the MathML. Switch it on for this one hidden formula only.
+  const options = window.MathJax.startup?.document?.options;
+  const wasOn = options?.enableSpeech;
+  if (options && !wasOn) options.enableSpeech = true;
   try {
     await window.MathJax.typesetPromise([holder]);
     // Speech is produced in a web worker after typesetting.
@@ -185,6 +196,7 @@ async function toSpeech(latex) {
     }
   } catch { /* no speech */ }
   finally {
+    if (options && !wasOn) options.enableSpeech = wasOn;
     try { window.MathJax.typesetClear?.([holder]); } catch { /* ignore */ }
     holder.remove();
   }
