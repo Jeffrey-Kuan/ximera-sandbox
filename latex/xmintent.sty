@@ -1,0 +1,142 @@
+%% xmintent.sty -- the commands of TailorSwiftBot.sty for Ximera web pages
+%%
+%% TailorSwiftBot.sty writes MathML intent into a tagged PDF. This file gives
+%% the same commands, with the same names and arguments, to a Ximera
+%% activity, so that the web page carries the same intent. Load it in the
+%% preamble:
+%%
+%%   \usepackage{xmintent}
+%%
+%% How it works. On a web page the math is typeset by MathJax, which receives
+%% each formula exactly as typed. The commands are therefore defined a second
+%% time for MathJax, in src/intent.cfg; that is where the intent is produced.
+%% The definitions below only serve
+%%   * the PDF that Ximera also makes from each activity (plain typesetting,
+%%     no tagging), and
+%%   * the few commands that may be used outside math: \xmunits, \xmdeg and
+%%     \xmblank.
+%% A change to a command has to be made in both files.
+%%
+%% Commands (see TailorSwiftBot.sty for the full description):
+%%   \xmunits[<intent>]{<unit>}   \xmdeg
+%%   \xmabs{x}   \xmdet{A}   \xmcard{A}   \xmnorm[<concept>]{v}
+%%   \xmpoint{2,5}   \xminterval{[a,b)}
+%%   \xmnewfunction[<spoken-name>]{\cmd}{<symbol>}   then \cmd, \cmd[f], \cmd[f](t)
+%%   \xmfunction{R}(x)   \xmcompose{f}{g}(x)   \xminv{f}(x)   \xmtrans[T]{A}
+%%   \xmvec{v}  \xmvec*{v}   \xmunitvec{v}  \xmunitvec*{v}
+%%   \xmdot{u}{v}   \xmcross{u}{v}
+%%   \xmblank[<width>]   \xmblankspoken{<words>}
+%%
+%% Not carried over: the parts of TailorSwiftBot.sty about PDF structure
+%% (theorem heads as headings, title as H1). They have no meaning here; the
+%% headings of a web page come from Ximera itself.
+%%
+%% Do not use \newcommand in this file, except where noted: Ximera copies
+%% every \newcommand to the web page for MathJax, where it would replace the
+%% MathJax definition.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{xmintent}[2026/11/17 v1.0 TailorSwiftBot commands for Ximera web pages]
+\RequirePackage{amsmath}
+
+% The two building blocks. In print they just typeset their second argument.
+\ProvideDocumentCommand \MathMLintent { m m } {#2}
+\ProvideDocumentCommand \MathMLarg { m m } {#2}
+
+\ExplSyntaxOn
+
+%% ---- units ---------------------------------------------------------------
+% Print: upright text. Web, outside math: hand the command to MathJax as an
+% inline formula. (Inside math MathJax receives it without any help.)
+\cs_if_exist:NTF \HCode
+  {
+    \NewDocumentCommand \xmunits { O{:unit} m }
+      {
+        \HCode { <span~class="mathjax-inline"> }
+        \HCode { \tl_to_str:n { \( \xmunits [#1] {#2} \) } }
+        \HCode { </span> }
+      }
+    \NewDocumentCommand \xmdeg { } { \xmunits { \textdegree } }
+  }
+  {
+    \NewDocumentCommand \xmunits { O{:unit} m } { \ensuremath { \textup {#2} } }
+    \NewDocumentCommand \xmdeg { } { \ensuremath { {} ^ { \circ } } }
+  }
+
+%% ---- bars ----------------------------------------------------------------
+\NewDocumentCommand \xmabs  { m } { \left\lvert #1 \right\rvert }
+\NewDocumentCommand \xmdet  { m } { \left\lvert #1 \right\rvert }
+\NewDocumentCommand \xmcard { m } { \left\lvert #1 \right\rvert }
+\NewDocumentCommand \xmnorm { O{norm} m } { \left\lVert #2 \right\rVert }
+
+%% ---- points and intervals ------------------------------------------------
+\NewDocumentCommand \xmpoint { m } { \left( #1 \right) }
+
+\tl_new:N \l__xmi_tl
+\NewDocumentCommand \xminterval { m }
+  {
+    \tl_set:Nn \l__xmi_tl {#1}
+    \exp_last_unbraced:Ne \left { \tl_head:N \l__xmi_tl }
+    \tl_range:Nnn \l__xmi_tl { 2 } { -2 }
+    \exp_last_unbraced:Ne \right { \tl_item:Nn \l__xmi_tl { -1 } }
+  }
+
+%% ---- functions -----------------------------------------------------------
+% \xmfn{<spoken-name>}{<symbol>} followed by an optional [f] and (t) is what
+% a command made with \xmnewfunction stands for.
+\NewDocumentCommand \xmfn { m m o d() }
+  {
+    #2
+    \IfValueT {#3} { [ #3 ] }
+    \IfValueT {#4} { ( #4 ) }
+  }
+% This \newcommand is meant to be copied to the web page: it is how MathJax
+% learns the new command. An empty first argument means "no spoken name".
+\NewDocumentCommand \xmnewfunction { O{} m m }
+  { \newcommand {#2} { \xmfn {#1} {#3} } }
+
+\NewDocumentCommand \xmfunction { m d() }
+  { #1 \IfValueT {#2} { ( #2 ) } }
+
+\NewDocumentCommand \xmcompose { m m d() }
+  {
+    \IfValueTF {#3}
+      { ( #1 \circ #2 ) ( #3 ) }
+      { #1 \circ #2 }
+  }
+
+\NewDocumentCommand \xminv { m d() }
+  { {#1} ^ { -1 } \IfValueT {#2} { ( #2 ) } }
+
+%% ---- vectors and linear algebra ------------------------------------------
+\NewDocumentCommand \xmtrans { O{T} m } { {#2} ^ {#1} }
+\NewDocumentCommand \xmvec { s m }
+  { \IfBooleanTF {#1} { \vec {#2} } { \mathbf {#2} } }
+\NewDocumentCommand \xmunitvec { s m }
+  { \IfBooleanTF {#1} { \hat {#2} } { \hat { \mathbf {#2} } } }
+\NewDocumentCommand \xmdot   { m m } { #1 \cdot #2 }
+\NewDocumentCommand \xmcross { m m } { #1 \times #2 }
+
+%% ---- a blank to fill in --------------------------------------------------
+% Web: an empty box with a line under it, announced by a screen reader with
+% the words set by \xmblankspoken ("blank space" unless changed). The width
+% must be a length that a browser also understands, such as 2.5in or 4cm.
+\tl_new:N \g__xmi_blank_spoken_tl
+\tl_gset:Nn \g__xmi_blank_spoken_tl { blank~space }
+\NewDocumentCommand \xmblankspoken { m }
+  { \tl_gset:Nn \g__xmi_blank_spoken_tl {#1} }
+
+\cs_if_exist:NTF \HCode
+  {
+    \NewDocumentCommand \xmblank { O{1.5in} }
+      {
+        \mode_leave_vertical:
+        \HCode { <span~class="xmblank"~role="img"~aria-label=" \g__xmi_blank_spoken_tl "~style="width:#1"></span> }
+      }
+  }
+  {
+    \NewDocumentCommand \xmblank { O{1.5in} }
+      { \mode_leave_vertical: \rule [ -.2ex ] {#1} { .4pt } }
+  }
+
+\ExplSyntaxOff
+\endinput

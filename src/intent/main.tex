@@ -1,6 +1,9 @@
 \documentclass{ximera}
 \input{../preamble.tex}
 
+\xmnewfunction{\F}{\mathcal{F}}
+\xmnewfunction[Fourier-transform]{\FT}{\mathcal{F}}
+
 \title{Math Intent}
 
 \begin{document}
@@ -25,6 +28,52 @@ A compound unit, read ``10 meters per second'': $10\,\xmunits{m}/\xmunits{s}$.
 A unit with a name of its own, read ``2 square feet'': $2\,\xmunits[square-feet]{sq.~ft.}$
 
 For comparison, the same bars with no intent: $|x-3|$.
+
+\section*{More commands}
+
+In each line the reading with intent is given first.
+
+A determinant, ``the determinant of A'': $\xmdet{A}$.
+
+A point, ``the point 2 comma 5'': $\xmpoint{2,5}$. In space: $\xmpoint{1,-2,z}$.
+
+Intervals: closed $\xminterval{[a,b]}$, open $\xminterval{(0,1)}$,
+closed open $\xminterval{[0,\infty)}$, open closed $\xminterval{(-1,3]}$.
+
+A function made with \verb|\xmnewfunction|, ``script F of f of t'':
+$\F[f](t)$. With a spoken name, ``Fourier transform of f of xi'':
+$\FT[f](\xi)$. Alone: $\F$.
+
+A one-off function, ``R of x'': $\xmfunction{R}(x)$; two variables:
+$\xmfunction{g}(x,y)$.
+
+Composition, ``f composed with g of x'': $\xmcompose{f}{g}(x)$; alone:
+$\xmcompose{f}{g}$.
+
+An inverse, ``f inverse of x'': $\xminv{f}(x)$; a matrix: $\xminv{A}$.
+
+A transpose: $\xmtrans{A}$.
+
+Vectors: $\xmvec{v}$, $\xmvec*{v}$, unit vectors $\xmunitvec{u}$,
+$\xmunitvec*{u}$.
+
+Products: $\xmdot{\xmvec{u}}{\xmvec{v}}$ and
+$\xmcross{\xmvec{u}}{\xmvec{v}}$.
+
+A norm: $\xmnorm{\xmvec{v}}$; a magnitude: $\xmnorm[magnitude]{\xmvec{v}}$.
+
+A cardinality: $\xmcard{A}$.
+
+Degrees: $90\xmdeg$. Outside math: a right angle is 90\xmdeg, and the
+board is 5~\xmunits{ft.} long.
+
+A blank to fill in. Name: \xmblank[2.5in] \quad Date: \xmblank
+
+In display math:
+\[
+\xmabs{\xmdot{\xmvec{u}}{\xmvec{v}}} \le \xmnorm{\xmvec{u}}\,\xmnorm{\xmvec{v}},
+\qquad \xmdet{\xmtrans{A}} = \xmdet{A} .
+\]
 
 \begin{problem}
 An answer box next to a unit: the square has side $\answer{4}\,\xmunits{cm}$

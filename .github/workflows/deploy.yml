@@ -73,9 +73,10 @@ jobs:
           if grep -q "img\[src\]').each((_, el) => rewrite" "$f"; then echo "image-link patch did not apply"; exit 1; fi
 
       # MathML intent for screen readers. src/intent.cfg holds a MathJax
-      # configuration that defines \xmunits, \xmabs and the two building
-      # blocks \MathMLintent and \MathMLarg, and switches on MathJax's
-      # assistive MathML. ximera.cfg comes from the @ximera/core package, so
+      # configuration that defines the commands of latex/xmintent.sty
+      # (\xmunits, \xmabs, \xmpoint, ...) and the two building blocks
+      # \MathMLintent and \MathMLarg, and switches on MathJax's assistive
+      # MathML. ximera.cfg comes from the @ximera/core package, so
       # the lines are inserted into the installed copy, just before
       # \begin{document}.
       - name: Add MathML intent configuration
@@ -98,8 +99,12 @@ jobs:
           done
           echo "size files present: $(find src -name '*.xbb' | wc -l)"
 
+      # latex/ holds style files written for this site (xmintent.sty). The
+      # build puts its own folder first on TeX's search path and keeps what
+      # is already in TEXINPUTS; the colon at the end keeps the standard
+      # TeX Live folders.
       - name: Build site
-        run: npm run build
+        run: TEXINPUTS="$PWD/latex//:" npm run build
 
       # Every page carries an inline rule, ".image-environment img { width:
       # unset; }", which makes the browser ignore the size given in LaTeX
