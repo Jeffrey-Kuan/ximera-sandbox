@@ -5,6 +5,9 @@ Ximera toolchain (`tex4npm` and the `@ximera/*` packages), which turns LaTeX
 sources into a static website. GitHub Actions does the build; nothing has to be
 installed on your own computer.
 
+**New to GitHub?** [GETTING-STARTED.md](GETTING-STARTED.md) walks through making
+your own copy of this course and publishing it as a website, step by step.
+
 ## What is here
 
     src/sandbox.tex            the course ("xourse") file: title and list of activities
