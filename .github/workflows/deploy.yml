@@ -52,14 +52,16 @@ jobs:
       # \answer{...} inside display math into an input box, but only looks for
       # <div class="mathjax-block">. Current TeX4ht writes display math as
       # <span class="mathjax-block">, so those answers were left as a literal
-      # \answer, which MathJax shows in red. Remove this step once the package
+      # \answer, which MathJax shows in red. The same goes for equation, align
+      # and the other display environments, which TeX4ht writes with the
+      # class "mathjax-env". Remove this step once the package
       # handles both. The grep makes the build fail loudly if the package
       # changes and the patch no longer applies.
       - name: Patch answer post-processing for span display math
         run: |
           f=node_modules/@ximera/answer/postprocess.js
-          sed -i "s/'span.mathjax-inline, div.mathjax-block'/'span.mathjax-inline, div.mathjax-block, span.mathjax-block'/" "$f"
-          grep -q "div.mathjax-block, span.mathjax-block" "$f"
+          sed -i "s/'span.mathjax-inline, div.mathjax-block'/'span.mathjax-inline, div.mathjax-block, span.mathjax-block, span.mathjax-env, div.mathjax-env'/" "$f"
+          grep -q "span.mathjax-block, span.mathjax-env, div.mathjax-env" "$f"
 
       # Workaround for tex4npm 2.0.0. For the copy of each activity inside a
       # course folder, it copies the page's images next to the copy, and then
