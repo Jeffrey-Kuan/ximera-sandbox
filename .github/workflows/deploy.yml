@@ -45,6 +45,12 @@ jobs:
         with:
           node-version: 22
 
+      # For the record: which TeX Live this build ran with.
+      - name: Show TeX Live version
+        run: |
+          pdflatex --version | head -1
+          lualatex --version | head -1
+
       - name: Install npm dependencies
         run: npm ci
 
