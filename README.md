@@ -20,7 +20,6 @@ installed on your own computer.
     static/answer-box/         the stock answer box on its own page, without (before)
                                and with (after) MathJax's assistive MathML
     latex/xmintent.sty         the \xm... commands for LaTeX (web version of TailorSwiftBot.sty)
-    papers/                    ordinary LaTeX documents; each .tex here is published as a PDF
     .devcontainer/             editing environment for GitHub Codespaces
     package.json               the Ximera packages the build uses
     tex4npm.config.js          where sources live (src) and where output goes (dist)
@@ -34,20 +33,6 @@ installed on your own computer.
 3. Push. The Actions tab shows a green check when the site builds, or a red X
    with the LaTeX error if it does not.
 
-## Papers: PDF on every push
-
-Put an ordinary LaTeX document directly inside `papers/`, for example
-`papers/talk.tex`. Each push compiles it and publishes the PDF at a fixed
-address:
-
-    https://jeffrey-kuan.github.io/ximera-sandbox/papers/talk.pdf
-
-`https://jeffrey-kuan.github.io/ximera-sandbox/papers/` lists all of them.
-Documents are compiled with LuaLaTeX; `papers/latexmkrc` changes that.
-Pictures and `.sty` or `.bib` files a document needs go in `papers/` too.
-If a document has an error, the website is still published without that
-PDF, and the build shows a warning with the end of the LaTeX log.
-
 ## Editing in a Codespace
 
 A Codespace is VS Code in the browser with TeX Live already installed.
@@ -57,7 +42,7 @@ A Codespace is VS Code in the browser with TeX Live already installed.
 2. Open a `.tex` file. Saving it compiles it; View LaTeX PDF (the icon at the
    top right) shows the PDF beside the source.
 3. Commit and push from the Source Control panel on the left. The push
-   starts the build that publishes the site and the PDFs.
+   starts the build that publishes the site.
 
 To write with someone at the same time, install the Live Share extension
 in the Codespace, start a session, and send them the link.

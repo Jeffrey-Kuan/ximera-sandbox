@@ -19,8 +19,7 @@
     "TEXINPUTS": "${containerWorkspaceFolder}/node_modules/@ximera//:${containerWorkspaceFolder}/latex//:"
   },
   // Runs once when the Codespace is created: install the Ximera packages,
-  // and make pdfLaTeX the default for folders without their own latexmkrc
-  // (papers/ has one, which chooses LuaLaTeX).
+  // and make latexmk produce a PDF with pdfLaTeX.
   "postCreateCommand": "npm ci && printf '$pdf_mode = 1;\\n' > ~/.latexmkrc",
   "customizations": {
     "vscode": {
