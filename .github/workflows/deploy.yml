@@ -136,6 +136,30 @@ jobs:
             echo "static files added: $(find static -type f | wc -l)"
           fi
 
+      # Papers, slides and other ordinary LaTeX documents. Every .tex file
+      # directly inside papers/ is compiled with latexmk (papers/latexmkrc
+      # chooses LuaLaTeX) and its PDF is published as papers/<name>.pdf, with
+      # a list at papers/. A document that does not compile does not stop the
+      # website: the step prints a warning and the end of the log, and that
+      # PDF is left out.
+      - name: Compile papers to PDF
+        run: |
+          ls papers/*.tex > /dev/null 2>&1 || exit 0
+          mkdir -p dist/papers
+          list=""
+          for f in papers/*.tex; do
+            name=$(basename "$f" .tex)
+            if (cd papers && latexmk -interaction=nonstopmode -halt-on-error "$name.tex" > "$name.build.txt" 2>&1); then
+              cp "papers/$name.pdf" dist/papers/
+              list="$list<li><a href=\"$name.pdf\">$name.pdf</a></li>"
+              echo "compiled $name.pdf"
+            else
+              echo "::warning file=$f::$name.tex did not compile, so $name.pdf is missing from the site"
+              tail -40 "papers/$name.build.txt"
+            fi
+          done
+          printf '%s\n' '<!DOCTYPE html>' '<html lang="en"><head><meta charset="utf-8">' '<meta name="viewport" content="width=device-width, initial-scale=1">' '<title>Papers</title></head>' "<body><h1>Papers</h1><ul>$list</ul></body></html>" > dist/papers/index.html
+
       # The build has no start page. Send visitors of the site's address to
       # the course page.
       - name: Add start page

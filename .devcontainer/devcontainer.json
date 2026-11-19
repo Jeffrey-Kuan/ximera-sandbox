@@ -1,0 +1,40 @@
+// A ready-made editing environment for GitHub Codespaces (Code > Codespaces >
+// Create codespace). It is not used by the website build.
+//
+// What you get: VS Code in the browser with full TeX Live, Node, and the
+// LaTeX Workshop extension. Saving a .tex file compiles it and shows the PDF
+// beside the source.
+{
+  "name": "Ximera sandbox",
+  // The same image the GitHub build uses, so a file that compiles here
+  // compiles there.
+  "image": "texlive/texlive:latest",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  // Lets LaTeX find ximera.cls (installed by npm) and latex/xmintent.sty
+  // from any folder. The colon at the end keeps the standard TeX Live folders.
+  "containerEnv": {
+    "TEXINPUTS": "${containerWorkspaceFolder}/node_modules/@ximera//:${containerWorkspaceFolder}/latex//:"
+  },
+  // Runs once when the Codespace is created: install the Ximera packages,
+  // and make pdfLaTeX the default for folders without their own latexmkrc
+  // (papers/ has one, which chooses LuaLaTeX).
+  "postCreateCommand": "npm ci && printf '$pdf_mode = 1;\\n' > ~/.latexmkrc",
+  "customizations": {
+    "vscode": {
+      "extensions": ["James-Yu.latex-workshop"],
+      "settings": {
+        "latex-workshop.latex.recipe.default": "latexmk (latexmkrc)",
+        "latex-workshop.latex.autoBuild.run": "onSave",
+        "latex-workshop.view.pdf.viewer": "tab",
+        "latex-workshop.latex.autoClean.run": "never",
+        "files.exclude": {
+          "**/*.aux": true, "**/*.fls": true, "**/*.fdb_latexmk": true,
+          "**/*.out": true, "**/*.synctex.gz": true, "**/*.toc": true
+        }
+      }
+    }
+  }
+}

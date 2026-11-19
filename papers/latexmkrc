@@ -1,0 +1,4 @@
+# Settings for latexmk in this folder, used by the GitHub build and by the
+# editor in a Codespace alike.
+# 4 = make the PDF with LuaLaTeX. Use 1 for pdfLaTeX, 5 for XeLaTeX.
+$pdf_mode = 4;

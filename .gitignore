@@ -26,3 +26,8 @@ dist/
 *.synctex.gz
 .DS_Store
 *.xbb
+
+# latexmk, and PDFs compiled from papers/ (the build publishes them)
+*.fdb_latexmk
+*.build.txt
+papers/*.pdf
