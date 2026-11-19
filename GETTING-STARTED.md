@@ -81,15 +81,34 @@ with your own username and repository name. You can also find it under
 If the page looks old after a change, reload it with Ctrl+F5 (Windows) or
 Cmd+Shift+R (Mac).
 
-## Step 6. Change something
+## Step 6. See what you already have
 
-The course is made of LaTeX files in the `src` folder. Each page of the
-course is called an **activity** and has a folder of its own.
+Your copy is not empty. It comes with five finished pages, which are
+already on your website. Each page of a course is called an **activity**
+and has a folder of its own inside the `src` folder:
+
+| File | What it shows |
+|---|---|
+| `src/first-steps/main.tex` | One example of each basic kind of question |
+| `src/lines/main.tex` | A short lesson with a drawn picture |
+| `src/pictures/main.tex` | Photos, with descriptions for screen readers |
+| `src/intent/main.tex` | Formulas written so that screen readers read them well |
+| `src/matrices/main.tex` | Answer boxes inside matrices |
+
+One more file, `src/sandbox.tex`, is the course itself: its title and the
+list of activities.
+
+Compare a page on your website with its `main.tex` to see which LaTeX
+makes what. You do not have to start from a blank file.
+
+## Step 7. Make a page your own
+
+The easiest start is to change the page `first-steps` into what you want.
 
 1. Click the **Code** tab to see the files.
 2. Click the folder `src`, then `first-steps`, then the file `main.tex`.
 3. Click the pencil icon at the top right of the file to edit it.
-4. Change some of the text. For example, find the line
+4. Change something. For example, find the line
 
        An answer box inside a sentence: $2+2=\answer{4}$.
 
@@ -98,7 +117,8 @@ course is called an **activity** and has a folder of its own.
        An answer box inside a sentence: $3+4=\answer{7}$.
 
    `\answer{7}` makes a box where a student types, and 7 is the answer
-   that will be marked correct.
+   that will be marked correct. Change the `\title{...}` line and the text
+   as you like, and delete the questions you do not need.
 5. Click the green **Commit changes...** button at the top right, write a
    few words such as "Change the first question", and click
    **Commit changes**.
@@ -106,41 +126,49 @@ course is called an **activity** and has a folder of its own.
 Committing starts a new build by itself. Watch it on the **Actions** tab;
 when the check mark is green, reload your website to see the change.
 
-## Step 7. Add a page of your own
+## Step 8. Add another page
 
-1. On the **Code** tab, open `src`, then click **Add file > Create new
-   file**.
-2. In the name box type `my-topic/main.tex`. Typing the `/` makes the
+A new page is a new folder in `src` with a file `main.tex` in it. Start
+from a copy of a page you already have.
+
+1. Open the page you want to copy, for example `src/first-steps/main.tex`,
+   and click the **Copy raw file** icon (two overlapping squares) at the
+   top right of the file.
+2. Go back to the `src` folder and click **Add file > Create new file**.
+3. In the name box type `my-topic/main.tex`. Typing the `/` makes the
    folder `my-topic` for you.
-3. Paste this in as the contents:
-
-       \documentclass{ximera}
-       \input{../preamble.tex}
-
-       \title{My Topic}
-
-       \begin{document}
-       \begin{abstract}
-       A first page of my own.
-       \end{abstract}
-       \maketitle
-
-       Some text, and a formula: $a^2+b^2=c^2$.
-
-       \begin{problem}
-       What is $5\cdot 6$? $\answer{30}$
-       \end{problem}
-
-       \end{document}
-
-4. Click **Commit changes...**, then **Commit changes**.
-5. Tell the course about the new page: open `src/sandbox.tex`, click the
+4. Paste (Ctrl+V, or Cmd+V on a Mac), then change the title and the
+   contents.
+5. Click **Commit changes...**, then **Commit changes**.
+6. Tell the course about the new page: open `src/sandbox.tex`, click the
    pencil, and add this line next to the other `\activity` lines:
 
        \activity{my-topic/main}
 
-6. Commit that change too. After the build, the new page appears in the
+7. Commit that change too. After the build, the new page appears in the
    course's list.
+
+If you would rather start small, this is a complete page you can paste in
+at step 4 instead:
+
+    \documentclass{ximera}
+    \input{../preamble.tex}
+
+    \title{My Topic}
+
+    \begin{document}
+    \begin{abstract}
+    A first page of my own.
+    \end{abstract}
+    \maketitle
+
+    Some text, and a formula: $a^2+b^2=c^2$.
+
+    \begin{problem}
+    What is $5\cdot 6$? $\answer{30}$
+    \end{problem}
+
+    \end{document}
 
 To remove a page you do not want, delete its `\activity{...}` line from
 `src/sandbox.tex`. To change the course title, edit the `\title{...}` line
