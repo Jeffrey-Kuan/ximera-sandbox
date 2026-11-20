@@ -59,6 +59,11 @@ screen reader says "blank space"; the answer itself is not shown. An answer
 marked as given, `\answer[given]{...}`, is still printed. The check mark that
 print normally puts on the correct `\choice` is left out as well.
 
+A `tblr` table (tabularray) is typeset in the PDF as a `tabular`, because
+LaTeX can tag those: its cells become table cells with header rows and
+columns taken from `rowhead` and `xmcolhead`. The author's table is not
+changed; `latex/xmtable.sty` does the conversion.
+
 ## Editing in a Codespace
 
 A Codespace is VS Code in the browser with TeX Live already installed.

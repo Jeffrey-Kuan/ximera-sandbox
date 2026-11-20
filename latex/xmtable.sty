@@ -22,9 +22,10 @@
 %% the headers of each cell it reads; the caption becomes <caption>, with the
 %% summary inside it.  The web side is latex/xm-table.4ht.
 %%
-%% In the PDF these keys change nothing: xmcolhead, caption and summary are
-%% ignored there, and rowhead keeps its tabularray meaning (the header row is
-%% repeated when a long table breaks across pages).
+%% In a tagged PDF the same table is typeset as a tabular that LaTeX's
+%% tagging code understands, with the same header cells; see "tagged PDF"
+%% below.  In an untagged PDF the table is tabularray's own: xmcolhead,
+%% caption and summary are ignored there.
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{tabularray}
 \ProvidesExplPackage{xmtable}{2026-11-20}{1.0}
@@ -35,5 +36,233 @@
     xmcolhead .code:n = \__tblr_keys_gput:nn { xmcolhead } {#1},
     caption   .code:n = \__tblr_keys_gput:nn { caption } {#1},
     summary   .code:n = \__tblr_keys_gput:nn { summary } {#1},
+  }
+
+%% ---- tagged PDF ---------------------------------------------------------------
+%% LaTeX's tagging code can tag tabular and tabularx, with header cells, but
+%% not tabularray: a tblr is built out of boxes, and in a tagged PDF every
+%% cell comes out as a loose paragraph, with no rows, columns or headers.
+%%
+%% So when tagging is active, tabularray still reads the table exactly as the
+%% author wrote it (colspec, \SetCell, hlines, ...), but the table is then
+%% typeset as a tabular, or a tabularx when it has X columns, made from what
+%% tabularray read.  rowhead and xmcolhead are passed on to the tagging code
+%% as header rows and header columns, and a cell that spans rows or columns
+%% is declared as such.  The caption and the summary are printed above the
+%% table.  Nothing changes in how the table is written.
+%%
+%% Not converted (they are typeset by tabularray as before, untagged): a
+%% table in math mode, and long tables (longtblr).  The look is plainer than
+%% tabularray's: column types l, c, r, p{width} and X, and full rules.
+%%
+%% Without tagging, and on the web page, none of this applies.
+\IfDocumentMetadataTF { \RequirePackage{tabularx} } { }
+
+\int_new:N \l__xmtbl_pdf_rowhead_int
+\int_new:N \l__xmtbl_pdf_colhead_int
+\int_new:N \l__xmtbl_pdf_r_int
+\int_new:N \l__xmtbl_pdf_c_int
+\bool_new:N \l__xmtbl_pdf_x_bool
+\bool_new:N \l__xmtbl_pdf_first_bool
+\tl_new:N \l__xmtbl_pdf_spec_tl
+\tl_new:N \l__xmtbl_pdf_body_tl
+\tl_new:N \l__xmtbl_pdf_cell_tl
+\tl_new:N \l__xmtbl_pdf_align_tl
+\tl_new:N \l__xmtbl_pdf_text_tl
+\clist_new:N \l__xmtbl_pdf_rows_clist
+\clist_new:N \l__xmtbl_pdf_cols_clist
+\cs_new_eq:NN \__xmtbl_pdf_orig_build_whole: \__tblr_build_whole:
+\cs_new_eq:NN \__xmtbl_pdf_orig_calc: \__tblr_calc_cell_and_line_sizes:
+
+%% l, c or r for the cell in row #1, column #2 (tabularray's default "j"
+%% and anything else become l).
+\cs_new:Npn \__xmtbl_pdf_halign:nn #1 #2
+  {
+    \str_case_e:nnF { \__tblr_data_item:neen { cell } {#1} {#2} { halign } }
+      { { c } { c } { r } { r } } { l }
+  }
+%% A rule to the left of column #1?
+\cs_new:Npn \__xmtbl_pdf_bar:n #1
+  {
+    \int_compare:nNnT
+      { 0 \__tblr_spec_item:ne { vline } { [\int_eval:n {#1}] / @vline-count } } > { 0 } { | }
+  }
+\cs_new_protected:Npn \__xmtbl_pdf_hline:n #1
+  {
+    \int_compare:nNnT
+      { 0 \__tblr_spec_item:ne { hline } { [\int_eval:n {#1}] / @hline-count } } > { 0 }
+      { \tl_put_right:Nn \l__xmtbl_pdf_body_tl { \hline } }
+  }
+
+%% The cell in row #1, column #2.
+\cs_new_protected:Npn \__xmtbl_pdf_cell:nn #1 #2
+  {
+    \tl_if_exist:cTF { l__xmtbl_pdf_skip_#1_#2_tl } { }
+      {
+        \bool_if:NTF \l__xmtbl_pdf_first_bool
+          { \bool_set_false:N \l__xmtbl_pdf_first_bool }
+          { \tl_put_right:Nn \l__xmtbl_pdf_body_tl { & } }
+        \tl_if_exist:cTF { l__xmtbl_pdf_under_#1_#2_tl }
+          {
+            %% Under a cell that spans rows: an empty cell of the same width.
+            \int_compare:nNnT { \tl_use:c { l__xmtbl_pdf_under_#1_#2_tl } } > { 1 }
+              {
+                \tl_put_right:Ne \l__xmtbl_pdf_body_tl
+                  { \exp_not:N \multicolumn { \tl_use:c { l__xmtbl_pdf_under_#1_#2_tl } } { l } { } }
+              }
+          }
+          {
+            \int_set:Nn \l__xmtbl_pdf_r_int
+              { \int_max:nn { 1 } { \__tblr_data_item:neen { cell } {#1} {#2} { rowspan } + 0 } }
+            \int_set:Nn \l__xmtbl_pdf_c_int
+              { \int_max:nn { 1 } { \__tblr_data_item:neen { cell } {#1} {#2} { colspan } + 0 } }
+            \tl_set:Ne \l__xmtbl_pdf_text_tl { \__tblr_spec_item:ne { text } { [#1][#2] } }
+            \tl_clear:N \l__xmtbl_pdf_cell_tl
+            \int_compare:nNnT { \l__xmtbl_pdf_r_int } > { 1 }
+              {
+                \tl_put_right:Ne \l__xmtbl_pdf_cell_tl
+                  { \exp_not:N \tagpdfsetup { table/multirow = \int_use:N \l__xmtbl_pdf_r_int } }
+              }
+            \tl_put_right:NV \l__xmtbl_pdf_cell_tl \l__xmtbl_pdf_text_tl
+            \tl_set:Ne \l__xmtbl_pdf_align_tl { \__xmtbl_pdf_halign:nn {#1} {#2} }
+            \bool_lazy_or:nnTF
+              { \int_compare_p:nNn { \l__xmtbl_pdf_c_int } > { 1 } }
+              { ! \str_if_eq_p:ee { \l__xmtbl_pdf_align_tl }
+                    { \__xmtbl_pdf_halign:nn { \int_use:N \c@rowcount } {#2} } }
+              {
+                \tl_put_right:Ne \l__xmtbl_pdf_body_tl
+                  {
+                    \exp_not:N \multicolumn { \int_use:N \l__xmtbl_pdf_c_int }
+                      {
+                        \int_compare:nNnT {#2} = { 1 } { \__xmtbl_pdf_bar:n { 1 } }
+                        \l__xmtbl_pdf_align_tl
+                        \__xmtbl_pdf_bar:n { #2 + \l__xmtbl_pdf_c_int }
+                      }
+                      { \exp_not:V \l__xmtbl_pdf_cell_tl }
+                  }
+              }
+              { \tl_put_right:NV \l__xmtbl_pdf_body_tl \l__xmtbl_pdf_cell_tl }
+            %% Remember which later cells this one covers.
+            \int_step_inline:nnn { #2 + 1 } { #2 + \l__xmtbl_pdf_c_int - 1 }
+              { \tl_set:cn { l__xmtbl_pdf_skip_#1_##1_tl } { } }
+            \int_step_inline:nnn { #1 + 1 } { #1 + \l__xmtbl_pdf_r_int - 1 }
+              {
+                \tl_set:ce { l__xmtbl_pdf_under_##1_#2_tl } { \int_use:N \l__xmtbl_pdf_c_int }
+                \int_step_inline:nnn { #2 + 1 } { #2 + \l__xmtbl_pdf_c_int - 1 }
+                  { \tl_set:cn { l__xmtbl_pdf_skip_##1_####1_tl } { } }
+              }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \__xmtbl_pdf_build:
+  {
+    \group_begin:
+    \int_set:Nn \l__xmtbl_pdf_rowhead_int { \__tblr_prop_item:ne { inner } { rowhead } + 0 }
+    \int_set:Nn \l__xmtbl_pdf_colhead_int { \__tblr_prop_item:ne { inner } { xmcolhead } + 0 }
+    %% column specification
+    \tl_clear:N \l__xmtbl_pdf_spec_tl
+    \bool_set_false:N \l__xmtbl_pdf_x_bool
+    \int_step_inline:nn { \c@colcount }
+      {
+        \tl_put_right:Ne \l__xmtbl_pdf_spec_tl { \__xmtbl_pdf_bar:n {##1} }
+        \fp_compare:nNnTF { \__tblr_data_item:nen { column } {##1} { coefficient } } > { 0 }
+          {
+            \bool_set_true:N \l__xmtbl_pdf_x_bool
+            \tl_put_right:Nn \l__xmtbl_pdf_spec_tl { X }
+          }
+          {
+            \dim_compare:nNnTF { \__tblr_data_item:nen { column } {##1} { width } } > { 0pt }
+              {
+                \tl_put_right:Ne \l__xmtbl_pdf_spec_tl
+                  { p { \__tblr_data_item:nen { column } {##1} { width } } }
+              }
+              {
+                \tl_put_right:Ne \l__xmtbl_pdf_spec_tl
+                  { \__xmtbl_pdf_halign:nn { \int_use:N \c@rowcount } {##1} }
+              }
+          }
+      }
+    \tl_put_right:Ne \l__xmtbl_pdf_spec_tl { \__xmtbl_pdf_bar:n { \c@colcount + 1 } }
+    %% rows
+    \tl_clear:N \l__xmtbl_pdf_body_tl
+    \int_step_inline:nn { \c@rowcount }
+      {
+        \__xmtbl_pdf_hline:n {##1}
+        \bool_set_true:N \l__xmtbl_pdf_first_bool
+        \int_step_inline:nn { \c@colcount } { \__xmtbl_pdf_cell:nn {##1} {####1} }
+        \tl_put_right:Nn \l__xmtbl_pdf_body_tl { \\ }
+      }
+    \__xmtbl_pdf_hline:n { \c@rowcount + 1 }
+    %% header rows and columns, for the tagging code
+    \clist_clear:N \l__xmtbl_pdf_rows_clist
+    \int_step_inline:nn { \l__xmtbl_pdf_rowhead_int } { \clist_put_right:Nn \l__xmtbl_pdf_rows_clist {##1} }
+    \clist_clear:N \l__xmtbl_pdf_cols_clist
+    \int_step_inline:nn { \l__xmtbl_pdf_colhead_int } { \clist_put_right:Nn \l__xmtbl_pdf_cols_clist {##1} }
+    \use:e
+      {
+        \exp_not:N \tagpdfsetup
+          {
+            table/header-rows = { \l__xmtbl_pdf_rows_clist } ,
+            table/header-columns = { \l__xmtbl_pdf_cols_clist }
+          }
+      }
+    %% caption and summary, above the table
+    \tl_set:Ne \l__xmtbl_pdf_text_tl { \__tblr_prop_item:ne { inner } { caption } }
+    \tl_if_empty:NF \l__xmtbl_pdf_text_tl
+      { \mode_leave_vertical: { \bfseries \l__xmtbl_pdf_text_tl } \par }
+    \tl_set:Ne \l__xmtbl_pdf_text_tl { \__tblr_prop_item:ne { inner } { summary } }
+    \tl_if_empty:NF \l__xmtbl_pdf_text_tl
+      { \mode_leave_vertical: { \small \l__xmtbl_pdf_text_tl } \par }
+    \bool_if:NTF \l__xmtbl_pdf_x_bool
+      {
+        \use:e
+          {
+            \exp_not:n { \begin{tabularx} { \linewidth } } { \exp_not:V \l__xmtbl_pdf_spec_tl }
+            \exp_not:V \l__xmtbl_pdf_body_tl
+            \exp_not:n { \end{tabularx} }
+          }
+      }
+      {
+        \use:e
+          {
+            \exp_not:n { \begin{tabular} } { \exp_not:V \l__xmtbl_pdf_spec_tl }
+            \exp_not:V \l__xmtbl_pdf_body_tl
+            \exp_not:n { \end{tabular} }
+          }
+      }
+    \group_end:
+  }
+
+%% Is this table one that is converted?
+\prg_new_protected_conditional:Npnn \__xmtbl_pdf_if_convert: { TF }
+  {
+    \bool_if:NTF \l__tblr_math_mode_bool
+      { \prg_return_false: }
+      {
+        \tl_if_eq:enTF { \__tblr_spec_item:nn { outer } { portrait } } { long }
+          { \prg_return_false: } { \prg_return_true: }
+      }
+  }
+
+\AddToHook { begindocument }
+  {
+    \bool_lazy_all:nT
+      {
+        { \cs_if_exist_p:N \tag_if_active:TF }
+        { ! \cs_if_exist_p:N \HCode }
+        { \cs_if_exist_p:N \tabularx }
+      }
+      {
+        \tag_if_active:T
+          {
+            %% tabularray typesets every cell once to measure it; that is
+            %% not needed for a converted table, and would be tagged.
+            \cs_set_protected:Npn \__tblr_calc_cell_and_line_sizes:
+              { \__xmtbl_pdf_if_convert:TF { } { \__xmtbl_pdf_orig_calc: } }
+            \cs_set_protected:Npn \__tblr_build_whole:
+              { \__xmtbl_pdf_if_convert:TF { \__xmtbl_pdf_build: } { \__xmtbl_pdf_orig_build_whole: } }
+          }
+      }
   }
 \endinput
