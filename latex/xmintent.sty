@@ -36,6 +36,12 @@
 %% MathJax definition.
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{xmintent}[2026/11/17 v1.0 TailorSwiftBot commands for Ximera web pages]
+
+% The tagged PDF of an activity is made with the real package,
+% TailorSwiftBot_Nov_2026.sty, loaded before the class. It defines the same
+% commands, with tagging, so this file then steps aside.
+\@ifpackageloaded{TailorSwiftBot_Nov_2026}{\endinput}{}
+\@ifpackageloaded{TailorSwiftBot}{\endinput}{}
 \RequirePackage{amsmath}
 
 % The two building blocks. In print they just typeset their second argument.

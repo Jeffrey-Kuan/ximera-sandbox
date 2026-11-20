@@ -144,6 +144,54 @@ jobs:
             echo "static files added: $(find static -type f | wc -l)"
           fi
 
+      # A tagged, accessible PDF of every activity, made from the same .tex
+      # file as its web page. LuaLaTeX compiles the activity with tagging
+      # switched on and TailorSwiftBot_Nov_2026.sty loaded before the class;
+      # nothing in the activity itself changes. The PDF is published next to
+      # the page, as <activity>/main.pdf, and the page gets a link to it.
+      # This works on a copy of src/, so the web build's files are not
+      # touched. An activity that does not compile is reported and skipped;
+      # it never stops the website.
+      - name: Build tagged PDFs
+        run: |
+          work=$(mktemp -d)
+          cp -R src "$work/src"
+          export TEXINPUTS="$PWD/src/.tex4npm/texmf//:$PWD/latex//:$PWD/TailorSwiftBot_Nov_2026//:"
+          meta='\DocumentMetadata{lang=en,pdfversion=2.0,pdfstandard=UA-2,testphase=latest,tagging-setup={math/setup=mathml-SE}}'
+          made=0
+          for f in "$work"/src/*/main.tex; do
+            dir=$(dirname "$f"); name=$(basename "$dir")
+            ( cd "$dir"
+              for pass in 1 2; do
+                lualatex -interaction=nonstopmode -shell-escape -jobname=main-tagged "$meta\\RequirePackage{TailorSwiftBot_Nov_2026}\\input{main.tex}" > main-tagged.txt 2>&1 || true
+              done )
+            errors=$(grep -c '^!' "$dir/main-tagged.txt" || true)
+            if [ "$errors" = 0 ] && [ -s "$dir/main-tagged.pdf" ]; then
+              cp "$dir/main-tagged.pdf" "dist/$name/main.pdf"
+              made=$((made+1))
+              echo "tagged PDF made: $name"
+              grep -E 'Warning' "$dir/main-tagged.txt" | sort | uniq -c | sort -rn | head -5 | cut -c1-150
+            else
+              echo "::warning::No tagged PDF for $name: $errors LaTeX error(s)"
+              grep -A6 '^!' "$dir/main-tagged.txt" | head -60 | cut -c1-160
+            fi
+          done
+          echo "tagged PDFs made: $made"
+          # A link from each page to its PDF: the page itself, and its copy
+          # inside the course folder.
+          for pdf in dist/*/main.pdf; do
+            [ -f "$pdf" ] || continue
+            name=$(basename "$(dirname "$pdf")")
+            for page in "dist/$name/main.html" dist/*/"$name"/main.html; do
+              [ -f "$page" ] || continue
+              case "$page" in
+                "dist/$name/main.html") href="main.pdf" ;;
+                *) href="../../$name/main.pdf" ;;
+              esac
+              sed -i "s|<main class=\"ximera-content\">|<main class=\"ximera-content\"><p class=\"tagged-pdf-link\"><a href=\"$href\">This page as a tagged PDF</a></p>|" "$page"
+            done
+          done
+
       # The build has no start page. Send visitors of the site's address to
       # the course page.
       - name: Add start page

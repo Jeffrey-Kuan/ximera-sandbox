@@ -95,3 +95,6 @@ mjx-mtd [id^="ximera-placeholder"] {
   border-bottom: 1px solid currentColor;
   vertical-align: baseline;
 }
+
+/* The link from a page to its tagged PDF. */
+.tagged-pdf-link { font-size: 0.9em; text-align: right; margin: 0 0 0.5em; }
