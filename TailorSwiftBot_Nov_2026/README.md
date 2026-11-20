@@ -1,7 +1,7 @@
-# TailorSwiftBot_Nov_2026: test documents
+# TailorSwiftBot_Nov_2026
 
-Small test documents for the LaTeX package `TailorSwiftBot_Nov_2026.sty`
-(accessibility helpers for tagged PDF), with the PDFs they produce. The PDFs
+The LaTeX package `TailorSwiftBot_Nov_2026.sty` (accessibility helpers for
+tagged PDF) and small test documents for it, with the PDFs they produce. The PDFs
 were compiled with LuaLaTeX on TeX Live 2026, LaTeX release 2026-11-01.
 
 They show the heading structure the package gives a tagged PDF: open a PDF
@@ -22,6 +22,8 @@ With the Ximera class the package is loaded before the class:
     \RequirePackage{TailorSwiftBot_Nov_2026}
     \documentclass{ximera}
 
-The package file itself is not in this folder.
+The package is `TailorSwiftBot_Nov_2026.sty` in this folder. Put it next to
+your document, or anywhere LaTeX looks for packages. The comments at the top
+of the file describe every command and explain why this version exists.
 
 This folder is not part of the website; the site build does not read it.

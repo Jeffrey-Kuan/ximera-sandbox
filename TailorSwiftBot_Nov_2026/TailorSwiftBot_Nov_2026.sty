@@ -1,0 +1,809 @@
+%% TailorSwiftBot_Nov_2026.sty -- accessibility helpers for tagged PDF from LaTeX
+%%
+%% WHY THIS FILE EXISTS (read this first)
+%%   This is TailorSwiftBot.sty, changed to also work with the LaTeX release
+%%   dated 2026-11-01.  Load it under its own name:
+%%       \usepackage{TailorSwiftBot_Nov_2026}
+%%   It defines the same commands as TailorSwiftBot.sty, so load one of the
+%%   two, never both.
+%%
+%%   What happened.  Part 3 makes the document title an H1 and moves every
+%%   section heading down one level.  It does so by naming the structure
+%%   tags LaTeX uses.  The LaTeX release of 2026-11-01 reworked the tagging
+%%   of headings and titles and changed those names:
+%%
+%%                          up to 2025-11-01      from 2026-11-01
+%%       section heading    section               section-heading
+%%       whole section      Sect                  section
+%%       title              Title                 title-text  (inside title-block)
+%%
+%%   TailorSwiftBot.sty maps "section" to H2.  On the new release that name
+%%   is the container around the whole section, so the container became an
+%%   H2 holding all the section's paragraphs, the heading itself stayed H1,
+%%   the title was no longer an H1, and LaTeX warned
+%%       Parent-Child 'pdf2:H2' --> 'pdf2:P'.  Relation is not allowed!
+%%
+%%   What this file does instead.  It asks LaTeX for the name of each
+%%   heading tag (\UseStructureName{sec/<level>/title}) and maps whatever
+%%   name comes back, and it maps both the old and the new title tag.  It
+%%   therefore works on either release.
+%%
+%%   Which release do I have?  Look near the top of the .log file for a
+%%   line such as  LaTeX2e <2025-11-01>.  Overleaf's TeX Live is a frozen
+%%   snapshot and can be older than an up-to-date TeX Live 2026 on your own
+%%   computer; TailorSwiftBot.sty is correct on releases before 2026-11-01.
+%%
+%%   Everything else is the same as TailorSwiftBot.sty v1.11.
+%%
+%% Target: TeX Live 2026 (LaTeX kernel 2026, latex-lab block code with the
+%%         captionedtext/caption tagging socket).  Compile with LuaLaTeX and
+%%
+%%   \DocumentMetadata{lang=en, pdfversion=2.0, pdfstandard=UA-2,
+%%                     testphase=latest, tagging-setup={math/setup=mathml-SE}}
+%%
+%% Part 1: \xmunits[<intent>]{<unit>}
+%%   1 \xmunits{in.}  typesets  in.  (upright) and tags it as
+%%   <mi mathvariant="normal" intent=":unit">in</mi>.  Periods are printed but
+%%   left out of the MathML; ties (~) become spaces.  The optional argument
+%%   replaces ":unit" by a literal intent name spoken as written (hyphens, not
+%%   spaces):   \xmunits[square-feet]{sq.~ft.}
+%%   Works in text or math mode.  Without luamml it just typesets the unit.
+%%   Powers work:  \xmunits{m}^2  gives <msup><mi intent=":unit">m</mi><mn>2</mn></msup>.
+%%   For compound units write each part separately:  \xmunits{m}/\xmunits{s}.
+%%   \xmdeg  is  \xmunits{\textdegree}:  90\xmdeg  prints 90° with the unit intent.
+%%
+%% Part 2: theorem heads as heading levels
+%%   "Theorem 1 (Name)." is tagged H<n>, one level below the heading level of
+%%   the innermost enclosing section, so heading levels never skip.  Works
+%%   with the kernel \newtheorem and with amsthm.  Proofs keep a Caption;
+%%   change the list with \thmheadingexclude{proof,solution}.
+%%
+%% Part 3: title as H1
+%%   The \maketitle title is role-mapped to H1 and every sectioning level is
+%%   moved down one (article: section=H2 ... subparagraph=H6;
+%%   book: chapter=H2 ... paragraph=H6).  Package option  notitlemap
+%%   switches this off.  Do not also set these role maps in the preamble.
+%%
+%% Parts 4-7: math intents (kernel \MathMLintent / \MathMLarg)
+%%   \xmabs{x}        |x|      absolute-value($x)
+%%   \xmdet{A}        |A|      determinant($x)
+%%   \xmpoint{2,5}    (2,5)    point($a1,$a2,...)  any number of coordinates
+%%   \xminterval{[a,b)}        closed/open/closed-open/open-closed-interval($a,$b)
+%%
+%% Part 8: \xmnewfunction[<spoken-name>]{\cmd}{<symbol>}
+%%   \xmnewfunction{\F}{\mathcal{F}}  then  \F[x]  is read "script F of x",
+%%   \F[f](t) as "script F of f of t", and \F alone is a function symbol.
+%%
+%% Part 9: \xmcompose{f}{g}  prints f \circ g, read "f composed with g";
+%%   \xmcompose{f}{g}(x) prints (f \circ g)(x), read "f composed with g of x".
+%%
+%% Part 10: one-off functions, vectors, linear algebra (W3C core concepts)
+%%   \xmfunction{R}(x)   R(x)       read "R of x" for any letter; (x,y) allowed;
+%%                       \xmfunction{R} alone tags R as a function symbol
+%%   \xminv{f}           f^{-1}     inverse:postfix($f);  \xminv{f}(x) applies it to x
+%%   \xmtrans[T]{A}      A^T        transpose:postfix($m); optional argument = the symbol
+%%   \xmvec{v}           \mathbf{v} vector($v);   \xmvec*{v} prints \vec{v}
+%%   \xmunitvec{v}       \hat{\mathbf{v}}  unit-vector($v);  \xmunitvec*{v} prints \hat{v}
+%%   \xmdot{u}{v}        u \cdot v  dot-product:infix($a,$b)
+%%   \xmcross{u}{v}      u \times v cross-product:infix($a,$b)
+%%   \xmnorm[norm]{v}    ||v||      norm($v);  \xmnorm[magnitude]{v} for that concept
+%%   \xmcard{A}          |A|        cardinality($s)
+%%
+%% Part 11: \xmblank[<width>]  a blank for the student to fill in
+%%   Name: \xmblank[2.5in]   prints a writing line and tags it so that a screen
+%%   reader says "blank space" (a bare rule would be skipped in silence).
+%%   Default width 1.5in.  Use it in text, not inside math: write
+%%   $f'(2) =$ \xmblank .  \xmblankspoken{answer blank} changes the spoken words.
+%%   Adapted from \answerline in ximeraExam.sty.
+%%
+%% Part 12: the Ximera class
+%%   With \documentclass{ximera} or {xourse} the package repairs two things
+%%   that otherwise stop a tagged document from compiling: a missing \author
+%%   (crash at \end{document}) and the title lines of \maketitle (tagging
+%%   error about begin and end structures).  It also tags the Ximera title
+%%   as H1, which the class does not do.  See Part 12 below.
+%%   On TeX Live 2026, load the package before the class:
+%%       \DocumentMetadata{...}
+%%       \RequirePackage{TailorSwiftBot_Nov_2026}
+%%       \documentclass{ximera}
+%%   Loaded with \usepackage after the class, the class itself stops with
+%%   "Option clash for package enumitem" and "Unknown option `pagestyles'".
+%%
+%% Fixity properties (v1.9).  composed-with, dot-product and cross-product carry
+%%   the property :infix, and inverse and transpose carry :postfix, so that a
+%%   reader says "f composed with g", "f inverse", "A transpose".  Without the
+%%   property, MathCAT versions that do not know these names read them as a
+%%   function call: "composed with of f comma g", "inverse of f".
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/20 v2.1 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support]
+\newif\ifTailorSwiftBot@titlemap \TailorSwiftBot@titlemaptrue
+\DeclareOption{notitlemap}{\TailorSwiftBot@titlemapfalse}
+\ProcessOptions\relax
+
+%% Loading before the class.
+% With the Ximera class on TeX Live 2026 the package has to be loaded before
+% \documentclass (see Part 12):
+%     \DocumentMetadata{...}
+%     \RequirePackage{TailorSwiftBot_Nov_2026}
+%     \documentclass{ximera}
+% \documentclass is disabled once a class has been read, which tells the two
+% cases apart.  Code that depends on the class is handed to \tsb@afterclass:
+% it runs at once when the class is already there, and otherwise just before
+% \begin{document}.
+\newif\ifTailorSwiftBot@preclass
+\ifx\documentclass\@twoclasseserror \else \TailorSwiftBot@preclasstrue \fi
+% Heading level of the last Ximera title that was tagged (Part 12); 0 = none.
+\newcount\tsb@ximera@titlelevel
+\ifTailorSwiftBot@preclass
+  \newcommand\tsb@afterclass[1]{\AddToHook{begindocument/before}{#1}}
+\else
+  \newcommand\tsb@afterclass[1]{#1}
+\fi
+% Two clashes between ximera.cls and the tagging code of TeX Live 2026, both
+% while the class is being read, so they can only be prevented from here.
+%  * The tagging code has loaded its own version of enumitem, without
+%    options; the class then asks for enumitem with the option "inline":
+%    "Option clash for package enumitem".  Record "inline" as given.
+%  * The tagging code replaces titlesec by its own version, which does not
+%    know the option "pagestyles" the class uses: "Unknown option
+%    `pagestyles'", after which \newpagestyle and \sethead are undefined.
+%    That option only loads the package titleps, so declare it to do that.
+\ifTailorSwiftBot@preclass
+  \@namedef{opt@enumitem.sty}{inline}
+  \@ifundefined{ds@pagestyles}
+    {\@namedef{ds@pagestyles}{\AtEndOfPackage{\RequirePackage{titleps}}}}{}
+\fi
+
+\ExplSyntaxOn
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 1: \xmunits
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \l__tsb_units_seq
+
+% A period inside a unit abbreviation is printed but kept out of the MathML:
+% the "." noad is told to produce no MathML at all (core = false).
+\cs_new_protected:Npn \__tsb_units_dropdot:
+  {
+    \cs_if_exist:NTF \luamml_annotate:en
+      { \luamml_annotate:en { core = false } { . } }
+      { . }
+  }
+
+% Typeset the unit as typed: letters upright via \mathrm (luamml merges the
+% letters of one \mathrm group into a single <mi>), periods dropped from the
+% MathML, ties (~) kept as spaces.
+\cs_new_protected:Npn \__tsb_units_body:n #1
+  {
+    \seq_set_split:Nnn \l__tsb_units_seq { . } {#1}
+    \seq_map_indexed_inline:Nn \l__tsb_units_seq
+      {
+        \int_compare:nNnT {##1} > { 1 } { \__tsb_units_dropdot: }
+        \tl_if_empty:nF {##2} { \mathrm{##2} }
+      }
+  }
+
+% #1 = intent value (string), #2 = unit as typed
+% The intent is added as an attribute to the node luamml builds itself, so the
+% <mi> keeps its marked content (NVDA rebuilds the MathML from the structure
+% tree and drops text that is not inside a MathML leaf).
+\cs_new_protected:Npn \__tsb_units_math:nn #1#2
+  {
+    \cs_if_exist:NTF \luamml_attribute:een
+      { \luamml_attribute:een { intent } {#1} { { \__tsb_units_body:n {#2} } } }
+      { { \__tsb_units_body:n {#2} } }
+  }
+
+% \xmunits[<intent>]{<unit>}
+\NewDocumentCommand \xmunits { O{:unit} m }
+  {
+    \mode_if_math:TF
+      { \__tsb_units_math:nn {#1} {#2} }
+      { \( \__tsb_units_math:nn {#1} {#2} \) }
+  }
+
+% \xmdeg : the degree sign as a unit, 90\xmdeg -> 90° tagged <mi intent=":unit">°</mi>.
+% Uses the kernel's \textdegree, so no extra package and nothing to paste in.
+\NewDocumentCommand \xmdeg { } { \xmunits { \textdegree } }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 2: theorem heads as heading levels
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\int_new:N   \l__tsb_level_int
+\tl_new:N    \l__tsb_tag_tl
+\clist_new:N \l__tsb_exclude_clist
+\clist_set:Nn \l__tsb_exclude_clist { proof }
+\bool_new:N  \l__tsb_titlemap_bool
+
+% \thmheadingexclude{proof,solution}
+%   Environments whose head should stay a Caption rather than become a heading.
+\NewDocumentCommand \thmheadingexclude { m }
+  { \clist_set:Nn \l__tsb_exclude_clist {#1} }
+
+% ---- heading level of the innermost open section ---------------------------
+% Preferred: read the RoleMap entry of that section's heading tag (what AT
+% actually sees), e.g. section -> H2.  Fallback: toclevel arithmetic.
+\cs_generate_variant:Nn \str_case:nnF { VnF }
+\cs_new:Npn \__tsb_tag_head:n #1 { \__tsb_tag_head_aux:w #1 / \q_stop }
+\cs_new:Npn \__tsb_tag_head_aux:w #1 / #2 \q_stop {#1}
+
+% #1 = section level (toclevel, as digits).  Sets \l__tsb_level_int to the
+% H number of that section's heading, or to 0 if it cannot be determined.
+\cs_new_protected:Npn \__tsb_lookup_level:n #1
+  {
+    \int_zero:N \l__tsb_level_int
+    \bool_lazy_all:nT
+      {
+        { \int_compare_p:nNn {#1} > { -2 } }
+        { \int_compare_p:nNn {#1} < { 6 } }
+        { \cs_if_exist_p:N \UseStructureName }
+        { \cs_if_exist_p:N \g__tag_role_rolemap_prop }
+      }
+      {
+        \tl_set:Ne \l__tsb_tag_tl
+          { \__tsb_tag_head:n { \UseStructureName { sec/#1/title } } }
+        % follow the role map up to three steps: section -> ... -> H2
+        \prg_replicate:nn { 3 }
+          {
+            \prop_get:NVNT \g__tag_role_rolemap_prop \l__tsb_tag_tl \l_tmpa_tl
+              { \tl_set_eq:NN \l__tsb_tag_tl \l_tmpa_tl }
+          }
+        \str_case:VnF \l__tsb_tag_tl
+          {
+            {H1}{ \int_set:Nn \l__tsb_level_int {1} }
+            {H2}{ \int_set:Nn \l__tsb_level_int {2} }
+            {H3}{ \int_set:Nn \l__tsb_level_int {3} }
+            {H4}{ \int_set:Nn \l__tsb_level_int {4} }
+            {H5}{ \int_set:Nn \l__tsb_level_int {5} }
+            {H6}{ \int_set:Nn \l__tsb_level_int {6} }
+          }
+          { }
+      }
+  }
+
+% Theorem head = heading number of enclosing section + 1, clamped to H1..H6.
+% (The 2026 section stack always holds a bottom entry {Document}{-100}{..};
+%  the clamp turns that into H1.)
+\cs_new_protected:Npn \__tsb_compute_level:
+  {
+    \int_zero:N \l__tsb_level_int
+    \seq_if_empty:NF \g__tag_sec_stack_seq
+      {
+        \seq_get:NN \g__tag_sec_stack_seq \l_tmpa_tl
+        \int_set:Nn \l_tmpa_int { \exp_last_unbraced:NV \use_ii:nnn \l_tmpa_tl }
+        \exp_args:Ne \__tsb_lookup_level:n { \int_use:N \l_tmpa_int }
+        % fallback: toclevel arithmetic (+1 with \chapter, +1 with the title map)
+        \int_compare:nNnT \l__tsb_level_int = { 0 }
+          {
+            \int_compare:nNnT \l_tmpa_int > { -2 }
+              {
+                \int_set:Nn \l__tsb_level_int { \l_tmpa_int }
+                \cs_if_exist:NT \chapter { \int_incr:N \l__tsb_level_int }
+                \bool_if:NT \l__tsb_titlemap_bool { \int_incr:N \l__tsb_level_int }
+              }
+          }
+      }
+    % No section is open.  In a Ximera document the title is a heading too
+    % (Part 12), so the theorem head goes one level below the title.
+    \int_compare:nNnT \l__tsb_level_int = { 0 }
+      {
+        \int_compare:nNnT \tsb@ximera@titlelevel > { 0 }
+          { \int_set:Nn \l__tsb_level_int { \tsb@ximera@titlelevel } }
+      }
+    \int_incr:N \l__tsb_level_int
+    \int_set:Nn \l__tsb_level_int
+      { \int_max:nn { 1 } { \int_min:nn { 6 } { \l__tsb_level_int } } }
+  }
+
+% The kernel emits every theorem-like and proof head through the tagging
+% socket captionedtext/caption and wraps it in a Caption.  Replace the plug:
+% H<n> for theorem-like environments, Caption for excluded ones (proof).
+% Theorem and proof blocks share the tag "theorem-like", so the environment
+% name (\l__block_env_name_tl, set by the kernel block code) tells them apart.
+\NewTaggingSocketPlug{captionedtext/caption}{heading}
+  {
+    \bool_set_false:N \l_tmpa_bool
+    \cs_if_exist:NT \l__block_env_name_tl
+      {
+        \clist_if_in:NVT \l__tsb_exclude_clist \l__block_env_name_tl
+          { \bool_set_true:N \l_tmpa_bool }
+      }
+    \bool_if:NTF \l_tmpa_bool
+      { \tag_struct_begin:n { tag = Caption } }
+      {
+        \__tsb_compute_level:
+        \tag_struct_begin:n { tag = H \int_use:N \l__tsb_level_int }
+      }
+    #2
+    \tag_struct_end:
+  }
+\AssignTaggingSocketPlug{captionedtext/caption}{heading}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 3: title as H1, sections shifted down one level
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% latex-lab tags the \maketitle title with a tag that has no heading level, so
+% heading navigation skips it.  Map it to H1 and move every sectioning level
+% down one so the sections sit under the title instead of beside it.
+%
+% The names of these tags depend on the LaTeX release (see the top of this
+% file), so they are not written out here:
+%   * Headings.  \UseStructureName{sec/<level>/title} gives the tag of the
+%     heading at that level: "section" on the older releases,
+%     "section-heading" from 2026-11-01.  Levels are LaTeX's own: 0 chapter,
+%     1 section, 2 subsection, 3 subsubsection, 4 paragraph, 5 subparagraph.
+%     If the answer has the form <tag>/<namespace>, the namespace is taken
+%     from it.  Otherwise the sectioning tags live in the "latex" namespace
+%     (article-like classes) or the "latex-book" namespace (classes with
+%     \chapter).
+%   * Title.  "Title" and "title" on the older releases, "title-text" from
+%     2026-11-01.  All three are mapped; a name the release does not use
+%     does no harm.  These names are case-sensitive.
+% The global RoleMap is keyed by tag name alone, so only the family the class
+% uses is mapped.  That choice depends on the class (\chapter), so the whole
+% part waits for the class when the package is loaded first.
+\seq_new:N \l__tsb_map_seq
+\tl_new:N  \l__tsb_map_tag_tl
+\tl_new:N  \l__tsb_map_ns_tl
+
+% #1 = sectioning level, #2 = heading number it is mapped to
+\cs_new_protected:Npn \__tsb_map_heading:nn #1#2
+  {
+    \tl_set:Ne \l__tsb_tag_tl { \UseStructureName { sec/#1/title } }
+    \seq_set_split:NnV \l__tsb_map_seq { / } \l__tsb_tag_tl
+    \tl_set:Ne \l__tsb_map_tag_tl { \seq_item:Nn \l__tsb_map_seq { 1 } }
+    \tl_set:Ne \l__tsb_map_ns_tl  { \seq_item:Nn \l__tsb_map_seq { 2 } }
+    \tl_if_empty:NT \l__tsb_map_ns_tl
+      {
+        \cs_if_exist:NTF \chapter
+          { \tl_set:Nn \l__tsb_map_ns_tl { latex-book } }
+          { \tl_set:Nn \l__tsb_map_ns_tl { latex } }
+      }
+    \tl_if_empty:NF \l__tsb_map_tag_tl
+      {
+        \exp_args:Ne \tagpdfsetup
+          {
+            role/new-tag =
+              {
+                tag = \l__tsb_map_tag_tl ,
+                tag-namespace = \l__tsb_map_ns_tl ,
+                role = H#2 ,
+                role-namespace = pdf2
+              }
+          }
+      }
+  }
+
+\tsb@afterclass
+  {
+    \legacy_if:nT { TailorSwiftBot@titlemap }
+      {
+        \bool_set_true:N \l__tsb_titlemap_bool
+        % the title: old names, then the name used from 2026-11-01
+        \tagpdfsetup { role/new-tag = Title/H1, role/new-tag = title/H1 }
+        \tagpdfsetup
+          { role/new-tag = { tag=title-text, tag-namespace=latex, role=H1, role-namespace=pdf2 } }
+        \cs_if_exist:NTF \UseStructureName
+          {
+            \cs_if_exist:NTF \chapter
+              {
+                % book-like: chapter = H2 ... paragraph and subparagraph = H6
+                \__tsb_map_heading:nn { 0 } { 2 }
+                \__tsb_map_heading:nn { 1 } { 3 }
+                \__tsb_map_heading:nn { 2 } { 4 }
+                \__tsb_map_heading:nn { 3 } { 5 }
+                \__tsb_map_heading:nn { 4 } { 6 }
+                \__tsb_map_heading:nn { 5 } { 6 }
+              }
+              {
+                % article-like: section = H2 ... subparagraph = H6
+                \__tsb_map_heading:nn { 1 } { 2 }
+                \__tsb_map_heading:nn { 2 } { 3 }
+                \__tsb_map_heading:nn { 3 } { 4 }
+                \__tsb_map_heading:nn { 4 } { 5 }
+                \__tsb_map_heading:nn { 5 } { 6 }
+              }
+          }
+          {
+            % A LaTeX too old to be asked: the names of the older releases.
+            \cs_if_exist:NTF \chapter
+              {
+                \tagpdfsetup
+                  {
+                    role/new-tag = { tag=chapter,       tag-namespace=latex-book, role=H2, role-namespace=pdf2 },
+                    role/new-tag = { tag=section,       tag-namespace=latex-book, role=H3, role-namespace=pdf2 },
+                    role/new-tag = { tag=subsection,    tag-namespace=latex-book, role=H4, role-namespace=pdf2 },
+                    role/new-tag = { tag=subsubsection, tag-namespace=latex-book, role=H5, role-namespace=pdf2 },
+                    role/new-tag = { tag=paragraph,     tag-namespace=latex-book, role=H6, role-namespace=pdf2 },
+                    role/new-tag = { tag=subparagraph,  tag-namespace=latex-book, role=H6, role-namespace=pdf2 }
+                  }
+              }
+              {
+                \tagpdfsetup
+                  {
+                    role/new-tag = { tag=section,       tag-namespace=latex, role=H2, role-namespace=pdf2 },
+                    role/new-tag = { tag=subsection,    tag-namespace=latex, role=H3, role-namespace=pdf2 },
+                    role/new-tag = { tag=subsubsection, tag-namespace=latex, role=H4, role-namespace=pdf2 },
+                    role/new-tag = { tag=paragraph,     tag-namespace=latex, role=H5, role-namespace=pdf2 },
+                    role/new-tag = { tag=subparagraph,  tag-namespace=latex, role=H6, role-namespace=pdf2 }
+                  }
+              }
+          }
+      }
+  }
+
+% Used by Part 12: give the paragraphs of the current group the tag #1, with
+% no enclosing text-unit structure.  The keys of \tagtool were renamed in the
+% LaTeX release of 2026-11-01 (para-flattened became para/flattened, and
+% paratag is no longer a \tagtool key), so use whichever exists.
+\cs_new_protected:Npn \tsb@ximera@settag #1
+  {
+    \keys_if_exist:nnTF { tag / tool } { para/flattened }
+      { \tagtool { para/flattened = true } }
+      {
+        \keys_if_exist:nnT { tag / tool } { para-flattened }
+          { \tagtool { para-flattened = true } }
+      }
+    \keys_if_exist:nnTF { tag / tool } { para/tag }
+      { \tagtool { para/tag = #1 } }
+      { \tagtool { paratag = #1 } }
+  }
+
+%% Part 4: absolute value
+
+  \NewDocumentCommand \xmabs { m }
+    { \MathMLintent{absolute-value($x)}{{\left\lvert\MathMLarg{x}{{#1}}\right\rvert}} }
+
+%% Part 5: determinant
+      \NewDocumentCommand \xmdet { m }
+    { \MathMLintent{determinant($x)}{{\left\lvert\MathMLarg{x}{{#1}}\right\rvert}} }
+
+%% Part 6: points: 
+
+  \seq_new:N \l__xmpoint_seq
+  \tl_new:N  \l__xmpoint_intent_tl
+  \tl_new:N  \l__xmpoint_body_tl
+  % \xmpoint{x,y,...}: any number of coordinates, split at top-level commas.                                   
+  % A comma inside a coordinate must be braced, e.g. \xmpoint{1{,}5, 2}.
+  \NewDocumentCommand \xmpoint { m }
+    {
+      \seq_set_split:Nnn \l__xmpoint_seq { , } {#1}
+      \tl_clear:N \l__xmpoint_intent_tl
+      \tl_clear:N \l__xmpoint_body_tl
+      \seq_map_indexed_inline:Nn \l__xmpoint_seq
+        {
+          \int_compare:nNnT {##1} > {1}
+            {
+              \tl_put_right:Nn \l__xmpoint_intent_tl { , }
+              \tl_put_right:Nn \l__xmpoint_body_tl   { , }
+            }
+          \tl_put_right:Nn \l__xmpoint_intent_tl { $a##1 }
+          \tl_put_right:Nn \l__xmpoint_body_tl   { \MathMLarg{a##1}{{##2}} }
+        }
+      \MathMLintent { point( \l__xmpoint_intent_tl ) }
+        { { \left( \l__xmpoint_body_tl \right) } }
+    }
+
+%% Part 7: intervals: 
+  \tl_new:N  \l__xmint_tl
+  \tl_new:N  \l__xmint_left_tl
+  \tl_new:N  \l__xmint_right_tl
+  \tl_new:N  \l__xmint_mid_tl
+  \tl_new:N  \l__xmint_concept_tl
+  \seq_new:N \l__xmint_seq
+  \bool_new:N \l__xmint_lclosed_bool
+  \bool_new:N \l__xmint_rclosed_bool
+  % \xminterval{[a,b)}: the first and last characters are the brackets and decide
+  % the concept: [ ] closed, ( ) open.  Reversed brackets ]a,b[ also mean open.
+  \NewDocumentCommand \xminterval { m }
+    {
+      \tl_set:Nn \l__xmint_tl {#1}
+      \tl_set:Ne \l__xmint_left_tl  { \tl_head:N \l__xmint_tl }
+      \tl_set:Ne \l__xmint_right_tl { \tl_item:Nn \l__xmint_tl {-1} }
+      \tl_set:Ne \l__xmint_mid_tl   { \tl_range:Nnn \l__xmint_tl {2} {-2} }
+      \seq_set_split:NnV \l__xmint_seq { , } \l__xmint_mid_tl
+      \bool_set:Nn \l__xmint_lclosed_bool { \str_if_eq_p:Vn \l__xmint_left_tl  { [ } }
+      \bool_set:Nn \l__xmint_rclosed_bool { \str_if_eq_p:Vn \l__xmint_right_tl { ] } }
+      \bool_if:NTF \l__xmint_lclosed_bool
+        { \bool_if:NTF \l__xmint_rclosed_bool
+            { \tl_set:Nn \l__xmint_concept_tl { closed-interval } }
+            { \tl_set:Nn \l__xmint_concept_tl { closed-open-interval } } }
+        { \bool_if:NTF \l__xmint_rclosed_bool
+            { \tl_set:Nn \l__xmint_concept_tl { open-closed-interval } }
+            { \tl_set:Nn \l__xmint_concept_tl { open-interval } } }
+      \MathMLintent { \l__xmint_concept_tl ($a,$b) }
+        {
+          {
+            \exp_after:wN \left \l__xmint_left_tl
+            \MathMLarg{a}{{ \seq_item:Nn \l__xmint_seq {1} }} ,
+            \MathMLarg{b}{{ \seq_item:Nn \l__xmint_seq {2} }}
+            \exp_after:wN \right \l__xmint_right_tl
+          }
+        }
+    }
+
+%% Part 8: function symbols with bracket arguments
+%   \xmnewfunction[<spoken-name>]{\cmd}{<symbol>}
+%   defines \cmd with an optional [argument] and an optional (evaluation point):
+%     \cmd         the symbol alone, tagged intent=":function"
+%     \cmd[f]      symbol[f], a function application read "<symbol> of f"
+%                  (intent $f($x); with the optional name, <spoken-name>($x),
+%                  read "<spoken name> of f")
+%     \cmd[f](t)   symbol[f](t), tagged as the application above applied to t,
+%                  intent $g($y1), read "... of f of t".  Without this the
+%                  reader treats the (t) as a factor and says "times t".
+%     \cmd[f](s,t) several evaluation variables, split at top-level commas:
+%                  intent $g($y1,$y2).  A comma inside one variable must be
+%                  braced, e.g. (1{,}5, t).
+%   Example:  \xmnewfunction[Fourier-transform]{\FT}{\mathcal{F}}
+%             then  \FT[f](\xi)  and  \FT[f]  and  \FT
+%   Note: \cmd swallows a following [ ... ] or ( ... ) as its argument, as any
+%   optional argument does; write \cmd{}[0,1] if the bracket is not meant.
+\seq_new:N \l__tsb_fun_seq
+\tl_new:N  \l__tsb_fun_intent_tl
+\tl_new:N  \l__tsb_fun_body_tl
+% Split "(t1,t2,...)" at top-level commas into the intent list "$y1,$y2,..."
+% and the body "\MathMLarg{y1}{{t1}}, \MathMLarg{y2}{{t2}}, ...".
+\cs_new_protected:Npn \__tsb_fun_split:n #1
+  {
+    \seq_set_split:Nnn \l__tsb_fun_seq { , } {#1}
+    \tl_clear:N \l__tsb_fun_intent_tl
+    \tl_clear:N \l__tsb_fun_body_tl
+    \seq_map_indexed_inline:Nn \l__tsb_fun_seq
+      {
+        \int_compare:nNnT {##1} > {1}
+          {
+            \tl_put_right:Nn \l__tsb_fun_intent_tl { , }
+            \tl_put_right:Nn \l__tsb_fun_body_tl   { , }
+          }
+        \tl_put_right:Nn \l__tsb_fun_intent_tl { $y##1 }
+        \tl_put_right:Nn \l__tsb_fun_body_tl   { \MathMLarg{y##1}{{##2}} }
+      }
+  }
+\cs_new_protected:Npn \__tsb_fun_apply:nnn #1#2#3
+  { % #1 = intent of the application, #2 = application body, #3 = (t1,t2,...) or -NoValue-
+    \IfNoValueTF {#3}
+      { \MathMLintent{#1}{{#2}} }
+      {
+        % the application, applied to the evaluation point: $g($y1,$y2,...)
+        \__tsb_fun_split:n {#3}
+        \MathMLintent{ $g( \l__tsb_fun_intent_tl ) }
+          {{ \MathMLarg{g}{{ \MathMLintent{#1}{{#2}} }} ( \l__tsb_fun_body_tl ) }}
+      }
+  }
+\NewDocumentCommand \xmnewfunction { o m m }
+  {
+    \IfNoValueTF {#1}
+      {
+        \NewDocumentCommand #2 { o d() }
+          {
+            \IfNoValueTF {##1}
+              { \MathMLintent{:function}{{#3}} }
+              { \__tsb_fun_apply:nnn { $f($x) } { \MathMLarg{f}{{#3}} [ \MathMLarg{x}{{##1}} ] } {##2} }
+          }
+      }
+      {
+        \NewDocumentCommand #2 { o d() }
+          {
+            \IfNoValueTF {##1}
+              { \MathMLintent{:function}{{#3}} }
+              { \__tsb_fun_apply:nnn { #1($x) } { #3 [ \MathMLarg{x}{{##1}} ] } {##2} }
+          }
+      }
+  }
+
+%% Part 9: composition of functions
+%   \xmcompose{f}{g}      prints  f \circ g  tagged intent composed-with:infix($f,$g),
+%                         read "f composed with g" (W3C core concept, infix).
+%   \xmcompose{f}{g}(x)   prints  (f \circ g)(x)  and tags the application
+%                         of the composition to x, read "... of x".
+%   Nest for three or more:  \xmcompose{f}{\xmcompose{g}{h}}.
+\NewDocumentCommand \xmcompose { m m d() }
+  {
+    \IfNoValueTF {#3}
+      { \MathMLintent{composed-with:infix($f,$g)}{{ \MathMLarg{f}{{#1}} \circ \MathMLarg{g}{{#2}} }} }
+      {
+        \__tsb_fun_apply:nnn { composed-with:infix($f,$g) }
+          { ( \MathMLarg{f}{{#1}} \circ \MathMLarg{g}{{#2}} ) } {#3}
+      }
+  }
+%% Part 10: one-off functions, vectors, linear algebra
+%   All use W3C core concept names, so MathCAT has a speech rule for each.
+%   \lVert/\rVert need amsmath or unicode-math (as \lvert in Part 4 already does).
+
+% \xmfunction{R}(x): R(x) read "R of x" without declaring R first.  Several
+% variables (x,y) are split at top-level commas as in Part 8.  \xmfunction{R}
+% alone tags R as a function symbol.
+\NewDocumentCommand \xmfunction { m d() }
+  {
+    \IfNoValueTF {#2}
+      { \MathMLintent{:function}{{#1}} }
+      {
+        \__tsb_fun_split:n {#2}
+        \MathMLintent{ $f( \l__tsb_fun_intent_tl ) }
+          {{ \MathMLarg{f}{{#1}} ( \l__tsb_fun_body_tl ) }}
+      }
+  }
+
+% \xminv{f}: f^{-1} as inverse:postfix($f); \xminv{f}(x) applies it, read "... of x".
+% Also for matrices: \xminv{A}.
+\NewDocumentCommand \xminv { m d() }
+  {
+    \__tsb_fun_apply:nnn { inverse:postfix($f) } { {\MathMLarg{f}{{#1}}}^{-1} } {#2}
+  }
+
+% \xmtrans[<symbol>]{A}: A^T as transpose:postfix($m).  Optional argument replaces the
+% T, e.g. \xmtrans[\top]{A} or \xmtrans[\mathsf{T}]{A}.
+\NewDocumentCommand \xmtrans { O{T} m }
+  { \MathMLintent{transpose:postfix($m)}{{ {\MathMLarg{m}{{#2}}}^{#1} }} }
+
+% \xmvec{v}: bold v as vector($v);  \xmvec*{v}: arrow accent instead of bold.
+%
+% An argument reference $v must point at a *descendant* of the element that
+% carries the intent (MathML 4, 5.1 "reference"; MathCAT rejects a self
+% reference).  luamml collapses an <mrow> with one child onto that child, which
+% would put intent and arg on the same <mi>.  The empty \mathclose{} is kept by
+% luamml as an empty <mrow/>, so the wrapper stays a two-child <mrow> and the
+% intent sits above the letter.  (An empty group {} is dropped, but an accent
+% keeps the intent on its <mover> when a {} follows it, so accents use that.)
+\NewDocumentCommand \xmvec { s m }
+  {
+    \IfBooleanTF {#1}
+      { \MathMLintent{vector($v)}{{ \vec{ \MathMLarg{v}{{#2}} } {} }} }
+      { \MathMLintent{vector($v)}{{ \MathMLarg{v}{{ \mathbf{#2} }} \mathclose{} }} }
+  }
+
+% \xmunitvec{v}: hat over bold v as unit-vector($v);  \xmunitvec*{v}: hat only.
+\NewDocumentCommand \xmunitvec { s m }
+  {
+    \IfBooleanTF {#1}
+      { \MathMLintent{unit-vector($v)}{{ \hat{ \MathMLarg{v}{{#2}} } {} }} }
+      { \MathMLintent{unit-vector($v)}{{ \hat{ \MathMLarg{v}{{ \mathbf{#2} }} } {} }} }
+  }
+
+% \xmdot{u}{v}, \xmcross{u}{v}: infix products with both operands as arguments.
+\NewDocumentCommand \xmdot { m m }
+  { \MathMLintent{dot-product:infix($a,$b)}{{ \MathMLarg{a}{{#1}} \cdot \MathMLarg{b}{{#2}} }} }
+\NewDocumentCommand \xmcross { m m }
+  { \MathMLintent{cross-product:infix($a,$b)}{{ \MathMLarg{a}{{#1}} \times \MathMLarg{b}{{#2}} }} }
+
+% \xmnorm[<concept>]{v}: double bars as norm($v); [magnitude] is the other core name.
+\NewDocumentCommand \xmnorm { O{norm} m }
+  { \MathMLintent{#1($v)}{{ \left\lVert \MathMLarg{v}{{#2}} \right\rVert }} }
+
+% \xmcard{A}: |A| as cardinality($s) (Part 4's \xmabs would say absolute value).
+\NewDocumentCommand \xmcard { m }
+  { \MathMLintent{cardinality($s)}{{ \left\lvert \MathMLarg{s}{{#1}} \right\rvert }} }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 11: \xmblank -- a blank for the student to fill in
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Adapted from \answerline in ximeraExam.sty.  The writing line is a bare rule,
+% which a screen reader would skip silently.  In a tagged build it is wrapped in
+% a Span whose ActualText names it, so the reader hears, for example,
+% "Name: blank space".  The push and pop pair suspends the enclosing paragraph's
+% marked content around the Span and does nothing when no marked content is open.
+
+\tl_new:N \g__tsb_blank_spoken_tl
+\tl_gset:Nn \g__tsb_blank_spoken_tl { blank~space }
+
+% \xmblankspoken{<words>}: change what is spoken for every later blank.
+\NewDocumentCommand \xmblankspoken { m }
+  { \tl_gset:Nn \g__tsb_blank_spoken_tl {#1} }
+
+\cs_new_protected:Npn \__tsb_blank_rule:n #1
+  { \rule [ -.2ex ] {#1} { .4pt } }
+
+% \xmblank[<width>]
+\NewDocumentCommand \xmblank { O{1.5in} }
+  {
+    \mode_if_math:TF
+      { \__tsb_blank_rule:n {#1} }
+      {
+        \mode_leave_vertical:
+        \cs_if_exist:NTF \tag_struct_begin:n
+          {
+            \tag_mc_end_push:
+            \tag_struct_begin:n
+              { tag = Span , actualtext = \g__tsb_blank_spoken_tl }
+            \tag_mc_begin:n { tag = Span }
+            \__tsb_blank_rule:n {#1}
+            \tag_mc_end:
+            \tag_struct_end:
+            \tag_mc_begin_pop:n { }
+          }
+          { \__tsb_blank_rule:n {#1} }
+      }
+  }
+\ExplSyntaxOff
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 12: the Ximera class
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Two things in ximera.cls (and xourse.cls) stop a tagged document from
+% compiling.  Both are repaired here, so the class itself stays as it is.
+% Nothing in this part runs with any other class.
+% On TeX Live 2026 there are two more, which happen while the class is being
+% read; for those the package must be loaded before \documentclass (see
+% "Loading before the class" near the top of this file).
+%
+% (a) No \author.  Until \author is used, \@author is a macro that issues
+%     the warning "No \author given".  article's \maketitle empties it;
+%     Ximera's does not.  With \DocumentMetadata the author is also written
+%     into the PDF's metadata, and turning that warning macro into plain
+%     text never ends: "TeX capacity exceeded, sorry [input stack size]" at
+%     \end{document}.  If no author was given in the preamble, \@author is
+%     made empty at \begin{document} and the warning is issued once here.
+%     \author after \begin{document} still works.
+%
+% (b) \maketitle.  Ximera sets the title lines with {\flushleft ... \par}.
+%     \flushleft is the start of the flushleft environment; the closing
+%     brace does not end it.  Untagged LaTeX does not notice, but the
+%     tagging code counts a block begun and never ended: "The number of
+%     automatic begin (..) and end (..) structures differs".  Ximera has
+%     three versions of \maketitle and swaps them while the document runs
+%     (\chapterstyle, \sectionstyle), so \maketitle is not patched.
+%     Instead, \flushleft used on its own, outside \begin{flushleft}, sets
+%     the text ragged right with the space above that the environment would
+%     have added, and starts no block.  \begin{flushleft} is unchanged.
+%
+% (c) The title is not a heading.  LaTeX tags the title by patching the
+%     standard \maketitle.  Ximera's own \maketitle only switches to a large
+%     bold font and prints the text, so the title is tagged as an ordinary
+%     paragraph, and Part 3 finds no title tag to turn into H1.  Nothing in
+%     the class marks the title line, so it is recognised by how the class
+%     typesets it: {\flushleft\LARGE ...} is the title, tagged H1;
+%     {\flushleft\Large ...}, the \sectionstyle version, is tagged H2.  The
+%     smaller line above it (\@pretitle) stays a paragraph.  Section headings
+%     are already one level down (Part 3), and a theorem head that is not
+%     inside a section goes one level below the title (Part 2).  The package
+%     option notitlemap switches this off together with Part 3.
+%     If ximera.cls changes how \maketitle sets the title, this stops
+%     recognising it and the title is a plain paragraph again; nothing breaks.
+\newcommand\tsb@ximera@noauthor{\@latex@warning@no@line{No \noexpand\author given}}
+\newcommand\tsb@ximera@envname{flushleft}
+\newcommand\tsb@ximera@flushleft{%
+  \ifx\@currenvir\tsb@ximera@envname
+    \expandafter\tsb@ximera@flushleft@env
+  \else
+    \expandafter\tsb@ximera@flushleft@decl
+  \fi}
+\newcommand\tsb@ximera@flushleft@decl{%
+  \ifvmode
+    \skip@\topsep \advance\skip@\partopsep
+    \addvspace\skip@
+  \else
+    \unskip\par\addvspace\topsep
+  \fi
+  \raggedright\parindent\z@
+  \futurelet\tsb@ximera@next\tsb@ximera@titlecheck}
+% (c) the title line.  \LARGE follows \flushleft in \maketitle and in the
+% \chapterstyle version, \Large in the \sectionstyle version, where the
+% activity is a section of a larger chapter.  \tagtool changes the tag of the
+% paragraphs in the current group, which is the title line and nothing else.
+\newcommand\tsb@ximera@titlecheck{%
+  \ifx\tsb@ximera@next\LARGE
+    \tsb@ximera@tagtitle{1}%
+  \else
+    \ifx\tsb@ximera@next\Large \tsb@ximera@tagtitle{2}\fi
+  \fi}
+\newcommand\tsb@ximera@tagtitle[1]{%
+  \ifTailorSwiftBot@titlemap
+    \@ifundefined{tagtool}{}{%
+      \global\tsb@ximera@titlelevel=#1\relax
+      \tsb@ximera@settag{H#1}}%
+  \fi}
+\newcommand\tsb@ximera@setup{%
+  \AddToHook{begindocument/end}{%
+    \ifx\@author\tsb@ximera@noauthor
+      \PackageWarningNoLine{TailorSwiftBot}{No \string\author\space given}%
+      \gdef\@author{}%
+    \fi
+    \let\tsb@ximera@flushleft@env\flushleft
+    \let\flushleft\tsb@ximera@flushleft}}
+\tsb@afterclass{%
+  \@ifclassloaded{ximera}{\tsb@ximera@setup}
+    {\@ifclassloaded{xourse}{\tsb@ximera@setup}{}}}
+\endinput
