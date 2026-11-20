@@ -1,13 +1,14 @@
 // choice-a11y.js
 //
-// Turns the choices of a multipleChoice question into ordinary radio buttons.
+// Turns the choices of a multipleChoice question into ordinary radio buttons,
+// and the choices of a selectAll question into ordinary checkboxes.
 //
-// Ximera draws each \choice as <span role="radio" tabindex="0">. That is a
-// hand-made radio button: every choice is a separate Tab stop, the arrow keys
+// Ximera draws each \choice as <span role="radio" tabindex="0"> (or
+// role="checkbox"). That is a hand-made control: every choice is a separate Tab stop, the arrow keys
 // do nothing, and the group has no name, so a screen reader does not say
 // which question the choices belong to.
 //
-// This file puts a real <input type="radio"> and a <label> inside each
+// This file puts a real <input type="radio"> (or "checkbox") and a <label> inside each
 // choice and takes the hand-made role off. The browser then supplies the
 // usual behaviour: one Tab stop for the group, arrow keys to move, "radio
 // button, 2 of 3". The group is named after the question in front of it, and
@@ -81,9 +82,10 @@ function upgrade(group) {
   if (!check) return;                       // Ximera has not set it up yet
   done.add(group);
 
+  const multi = group.classList.contains('select-all');   // more than one answer
   const ids = questionIds(group);
   if (ids) group.setAttribute('aria-labelledby', ids);
-  else group.setAttribute('aria-label', 'Multiple choice');
+  else group.setAttribute('aria-label', multi ? 'Select all correct answers' : 'Multiple choice');
 
   const name = (group.id || 'xm-choices-' + (++counter)) + '-choice';
   group.querySelectorAll('.choice').forEach((choice) => {
@@ -92,7 +94,7 @@ function upgrade(group) {
     choice.removeAttribute('tabindex');
 
     const input = document.createElement('input');
-    input.type = 'radio';
+    input.type = multi ? 'checkbox' : 'radio';
     input.name = name;
     input.id = choice.id + '-input';
     input.className = 'xm-choice-input';
@@ -115,7 +117,9 @@ function upgrade(group) {
   check.addEventListener('click', () => setTimeout(() => {
     const state = group.dataset.state || '';
     if (/\bcorrect\b/.test(state)) announce('Correct.');
-    else if (group.querySelector('.choice[data-state~="selected"]')) announce('Incorrect. Try another choice.');
+    else if (group.querySelector('.choice[data-state~="selected"]')) {
+      announce(multi ? 'Incorrect. Change your choices and try again.' : 'Incorrect. Try another choice.');
+    }
     else announce('Choose an answer first.');
   }, 60));
 
@@ -126,7 +130,7 @@ function upgrade(group) {
 }
 
 function upgradeAll() {
-  document.querySelectorAll('.multiple-choice').forEach(upgrade);
+  document.querySelectorAll('.multiple-choice, .select-all').forEach(upgrade);
 }
 
 upgradeAll();
