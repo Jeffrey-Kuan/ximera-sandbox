@@ -98,3 +98,7 @@ mjx-mtd [id^="ximera-placeholder"] {
 
 /* The link from a page to its tagged PDF. */
 .tagged-pdf-link { font-size: 0.9em; text-align: right; margin: 0 0 0.5em; }
+
+/* \underline{...} in text (and \uline, \ul from the ulem and soul packages).
+   The conversion marks the words; these rules draw the line. */
+.underline, .uline, .textul { text-decoration: underline; }
