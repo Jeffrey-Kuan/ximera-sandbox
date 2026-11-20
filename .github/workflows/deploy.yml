@@ -1,24 +1,16 @@
-# Build the Ximera site with tex4npm, publish it to GitHub Pages, and also to
-# S3 if a bucket is set.
+# Build the Ximera site with tex4npm and publish it to GitHub Pages.
 #
 # GitHub Pages needs no secrets. It must be switched on once under
 # Settings > Pages, with "GitHub Actions" as the source.
 #
+# Every push and pull request builds the site. Publishing happens only on
+# pushes to the default branch.
+#
 # Building without publishing: every run attaches the finished site to
 # itself as a download named "website" (open the run on the Actions tab and
-# look under Artifacts). To build only, and never publish to GitHub Pages,
-# create a repository variable named PUBLISH with the value false, under
+# look under Artifacts). To build only, and never publish, create a
+# repository variable named PUBLISH with the value false, under
 # Settings > Secrets and variables > Actions > Variables.
-# That switches off the S3 deploy as well.
-#
-# Every push and pull request builds the site. Deploying is optional: it only
-# happens on pushes to the default branch, and only when the S3_BUCKET variable
-# exists. Set these under Settings > Secrets and variables > Actions:
-#
-#   Secrets:   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-#   Variables: S3_BUCKET     the bucket name
-#              AWS_REGION    the bucket's region, e.g. us-east-2
-#              S3_PREFIX     optional folder inside the bucket, e.g. sandbox
 
 name: Build and deploy
 
@@ -269,29 +261,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
-      - name: Configure AWS credentials
-        if: vars.PUBLISH != 'false' && vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-
-      # --delete removes objects that are no longer part of the site. With a
-      # prefix it only looks inside that folder; without one it covers the
-      # whole bucket, so never point a prefix-less deploy at a shared bucket.
-      - name: Deploy to S3
-        if: vars.PUBLISH != 'false' && vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        env:
-          S3_BUCKET: ${{ vars.S3_BUCKET }}
-          S3_PREFIX: ${{ vars.S3_PREFIX }}
-        run: |
-          if [ -n "$S3_PREFIX" ]; then
-            npx tex4npm deploy "$S3_BUCKET" --prefix "$S3_PREFIX" --delete
-          else
-            npx tex4npm deploy "$S3_BUCKET" --delete
-          fi
 
   pages:
     name: Publish to GitHub Pages
