@@ -10,6 +10,15 @@ your computer, and everything here is free. Allow about 20 minutes.
 Your copy is completely separate from the original. Nothing you do can
 change or break anyone else's site.
 
+## Getting updates
+
+Accessibility tools change quickly, and these instructions will change with
+them. To hear about updates, join the mailing list:
+
+https://forms.cloud.microsoft/r/JE6pQeD0N5
+
+Emails go out at most once a month.
+
 ## A few words you will meet
 
 - **GitHub**: a website that stores files and keeps every earlier version
@@ -84,17 +93,18 @@ Cmd+Shift+R (Mac).
 
 ## Step 6. See what you already have
 
-Your copy is not empty. It comes with five finished pages, which are
+Your copy is not empty. It comes with six finished pages, which are
 already on your website. Each page of a course is called an **activity**
 and has a folder of its own inside the `src` folder:
 
 | File | What it shows |
 |---|---|
-| `src/first-steps/main.tex` | One example of each basic kind of question |
+| `src/first-steps/main.tex` | One example of each basic kind of question, a Desmos graph, and text that folds away |
 | `src/lines/main.tex` | A short lesson with a drawn picture |
 | `src/pictures/main.tex` | Photos, with descriptions for screen readers |
 | `src/intent/main.tex` | Formulas written so that screen readers read them well |
 | `src/matrices/main.tex` | Answer boxes inside matrices |
+| `src/tables/main.tex` | Tables that screen readers can read by row and column |
 
 One more file, `src/sandbox.tex`, is the course itself: its title and the
 list of activities.

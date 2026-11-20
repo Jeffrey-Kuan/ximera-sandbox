@@ -16,11 +16,13 @@ your own copy of this course and publishing it as a website, step by step.
     src/lines/main.tex         a short activity with a TikZ picture
     src/intent/main.tex        test page for MathML intent (screen readers)
     src/matrices/main.tex      answer boxes inside matrices and vectors
+    src/tables/main.tex        tables with header cells a screen reader can announce
     src/intent.cfg             MathJax setup for intent: \xmunits, \xmabs
     src/custom.css             site-specific styling
     static/                    hand-written pages, copied into the site as they are
     latex/ximera-components.sty  loads \answer, multipleChoice, hint and the other interactive pieces
     latex/xm-a11y.4ht            web accessibility of foldable, expandable, hint, theorems, footnotes
+    latex/xmtable.sty            accessible tabularray tables: rowhead, xmcolhead, caption, summary
     static/answer-a11y.js      screen reader support for \answer boxes, loaded on every page
     static/choice-a11y.js      ordinary radio buttons and checkboxes for \choice
     static/collapse-a11y.js    opens and closes expandable, accordion and hint

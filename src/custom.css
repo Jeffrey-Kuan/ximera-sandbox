@@ -211,3 +211,20 @@ mjx-mtd [id^="ximera-placeholder"] {
 .theorem-like > .theorem-like-heading::after { content: "."; }
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title) { margin-right: 0; }
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title)::after { content: none; }
+
+/* ---- tables (latex/xmtable.sty, latex/xm-table.4ht) ---- */
+table.tabularray caption {
+  caption-side: top;
+  padding: 0 0 0.4em;
+  font-weight: 600;
+  text-align: left;
+}
+/* The summary: under the caption, in ordinary type. */
+table.tabularray .xm-table-summary {
+  display: block;
+  font-weight: normal;
+  font-size: 0.9em;
+}
+table.tabularray th,
+table.tabularray td { padding: 0.25em 0.6em; }
+table.tabularray th { font-weight: 600; background: #f4f4f4; }

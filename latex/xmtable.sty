@@ -1,0 +1,39 @@
+%% xmtable.sty
+%%
+%% Accessible tables with the tabularray package (tblr, longtblr, ...).
+%%
+%% WHERE THIS COMES FROM.  The table work of October 2025 in
+%% github.com/Jeffrey-Kuan/ximeraLatex (TailorSwiftBotPublic.sty, ximera.cfg
+%% and tabularray.4ht there), rebuilt on the table support that tex4ht ships
+%% today.  The author-facing keys are the same.
+%%
+%% Keys, written in the second argument of tblr with the other settings:
+%%
+%%   rowhead = 1      (a tabularray key) the first row holds column headers
+%%   xmcolhead = 1    the first column holds row headers
+%%   caption = {...}  a caption for the table
+%%   summary = {...}  one or two sentences on how the table is laid out
+%%
+%%   \begin{tblr}{colspec={lcc}, rowhead=1, xmcolhead=1,
+%%                caption={Scores}, summary={One row for each student.}}
+%%
+%% On the web page a header cell becomes <th scope="col">, <th scope="row">,
+%% or with a span "colgroup" / "rowgroup", so that a screen reader announces
+%% the headers of each cell it reads; the caption becomes <caption>, with the
+%% summary inside it.  The web side is latex/xm-table.4ht.
+%%
+%% In the PDF these keys change nothing: xmcolhead, caption and summary are
+%% ignored there, and rowhead keeps its tabularray meaning (the header row is
+%% repeated when a long table breaks across pages).
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage{tabularray}
+\ProvidesExplPackage{xmtable}{2026-11-20}{1.0}
+  {Accessible tabularray tables: header cells, caption, summary}
+
+\__tblr_keys_define:nn { table/inner }
+  {
+    xmcolhead .code:n = \__tblr_keys_gput:nn { xmcolhead } {#1},
+    caption   .code:n = \__tblr_keys_gput:nn { caption } {#1},
+    summary   .code:n = \__tblr_keys_gput:nn { summary } {#1},
+  }
+\endinput

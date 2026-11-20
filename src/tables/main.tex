@@ -1,0 +1,54 @@
+\documentclass{ximera}
+\input{../preamble.tex}
+
+\title{Tables}
+
+\begin{document}
+\begin{abstract}
+Tables whose header cells a screen reader can announce.
+\end{abstract}
+\maketitle
+
+These tables use the \texttt{tabularray} package. Four settings tell a
+screen reader how a table is laid out: \texttt{rowhead} (how many rows at the
+top hold column headers), \texttt{xmcolhead} (how many columns at the left
+hold row headers), \texttt{caption} and \texttt{summary}.
+
+\section{Column headers and row headers}
+
+\begin{center}
+\begin{tblr}{colspec={lcc}, hlines, vlines, rowhead=1, xmcolhead=1,
+    caption={Quiz scores}, summary={One row for each student, one column for each quiz.}}
+Student & Quiz 1 & Quiz 2 \\
+Ada     & 9      & 10     \\
+Emmy    & 8      & 7      \\
+\end{tblr}
+\end{center}
+
+\section{Headers that span columns}
+
+\begin{center}
+\begin{tblr}{colspec={lcccc}, hlines, vlines, rowhead=2, xmcolhead=1,
+    caption={Values of two functions}}
+\SetCell[r=2]{c} $x$ & \SetCell[c=2]{c} $f$ & & \SetCell[c=2]{c} $g$ & \\
+      & value & slope & value & slope \\
+$0$   & $1$   & $0$   & $0$   & $1$   \\
+$1$   & $2$   & $2$   & $1$   & $1$   \\
+\end{tblr}
+\end{center}
+
+\section{A table with an answer}
+
+\begin{problem}
+Fill in the missing value.
+
+\begin{center}
+\begin{tblr}{colspec={cc}, hlines, vlines, rowhead=1, caption={Squares}}
+$n$ & $n^2$ \\
+$2$ & $4$ \\
+$3$ & $\answer{9}$ \\
+\end{tblr}
+\end{center}
+\end{problem}
+
+\end{document}

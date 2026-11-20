@@ -11,6 +11,7 @@
   \ifdefined\@oldargdef \let\@argdef\@oldargdef \fi
   \makeatletter
   \input{xm-a11y.4ht}%
+  \@ifpackageloaded{xmtable}{\catcode`\:=11 \input{xm-table.4ht}\catcode`\:=12 }{}%
   \makeatother
   \let\@argdef\xmcomp@savedargdef
 }

@@ -1,0 +1,111 @@
+%% xm-table.4ht
+%%
+%% Web page side of xmtable.sty: header cells, caption and summary for
+%% tabularray tables.  Applied by ximera-components.4ht at the end of
+%% \begin{document}, and only when xmtable is loaded.
+%%
+%% tex4ht already writes a cell in a rowhead row as <th>.  This file adds
+%% what a screen reader needs to tie a data cell to its headers:
+%%   * scope="col" on those cells, or "colgroup" when the cell spans columns;
+%%   * the first xmcolhead columns as <th scope="row">, or "rowgroup" when
+%%     the cell spans rows;
+%%   * the corner, where header rows and header columns cross, stays <td>;
+%%   * <colgroup> elements following the spans of the first row, which
+%%     scope="colgroup" refers to;
+%%   * <caption>, holding the caption and then the summary.
+\ExplSyntaxOn
+\int_new:N \l__xmtbl_rowhead_int
+\int_new:N \l__xmtbl_colhead_int
+\int_new:N \l__xmtbl_col_int
+\int_new:N \l__xmtbl_span_int
+\bool_new:N \l__xmtbl_groups_bool
+\tl_new:N \l__xmtbl_caption_tl
+\tl_new:N \l__xmtbl_summary_tl
+\tl_new:N \l__xmtbl_colgroups_tl
+
+%% "+ 0": an unset key gives nothing, which must still be a number.
+\cs_new_protected:Npn \__xmtbl_read_heads:
+  {
+    \int_set:Nn \l__xmtbl_rowhead_int
+      { \__tblr_prop_item:ne { inner } { rowhead } + 0 }
+    \int_set:Nn \l__xmtbl_colhead_int
+      { \__tblr_prop_item:ne { inner } { xmcolhead } + 0 }
+  }
+
+%% th or td, and the scope, for the cell at \HRow, \HCol.
+\cs_new:Npn \__xmtbl_if_head:TF
+  {
+    \int_compare:nNnTF { \HRow } > { \l__xmtbl_rowhead_int }
+      { \int_compare:nNnTF { \HCol } > { \l__xmtbl_colhead_int }
+          { \use_ii:nn } { \use_i:nn } }
+      { \int_compare:nNnTF { \HCol } > { \l__xmtbl_colhead_int }
+          { \use_i:nn } { \use_ii:nn } }
+  }
+\cs_new:Npn \xmtblcelltag { \__xmtbl_if_head:TF { th } { td } }
+\cs_new:Npn \xmtblcellscope
+  {
+    \__xmtbl_if_head:TF
+      {
+        \int_compare:nNnTF { \HRow } > { \l__xmtbl_rowhead_int }
+          { scope="\int_compare:nNnTF { \HRowspan } > { 1 } { rowgroup } { row }" }
+          { scope="\int_compare:nNnTF { \HMultispan } > { 1 } { colgroup } { col }" }
+      }
+      { }
+  }
+
+%% Before the first row: caption (with the summary), then the column groups.
+\cs_new_protected:Npn \__xmtbl_before_first_row:
+  {
+    \tl_set:Ne \l__xmtbl_caption_tl { \__tblr_prop_item:ne { inner } { caption } }
+    \tl_set:Ne \l__xmtbl_summary_tl { \__tblr_prop_item:ne { inner } { summary } }
+    \bool_lazy_and:nnF
+      { \tl_if_empty_p:N \l__xmtbl_caption_tl }
+      { \tl_if_empty_p:N \l__xmtbl_summary_tl }
+      {
+        \HCode{<caption>}
+        \l__xmtbl_caption_tl
+        \tl_if_empty:NF \l__xmtbl_summary_tl
+          { \HCode{~<span~class="xm-table-summary">} \l__xmtbl_summary_tl \HCode{</span>} }
+        \HCode{</caption>}
+      }
+    %% Column groups, only when a cell of the first header row spans columns.
+    \int_compare:nNnT { \l__xmtbl_rowhead_int } > { 0 }
+      {
+        \tl_clear:N \l__xmtbl_colgroups_tl
+        \bool_set_false:N \l__xmtbl_groups_bool
+        \int_set:Nn \l__xmtbl_col_int { 1 }
+        \int_while_do:nNnn { \l__xmtbl_col_int } < { \c@colcount + 1 }
+          {
+            \int_set:Nn \l__xmtbl_span_int
+              { \__tblr_data_item:neen { cell } { 1 } { \int_use:N \l__xmtbl_col_int } { colspan } + 0 }
+            \int_compare:nNnT { \l__xmtbl_span_int } < { 1 }
+              { \int_set:Nn \l__xmtbl_span_int { 1 } }
+            \int_compare:nNnT { \l__xmtbl_span_int } > { 1 }
+              { \bool_set_true:N \l__xmtbl_groups_bool }
+            \tl_put_right:Ne \l__xmtbl_colgroups_tl
+              { <colgroup~span="\int_use:N \l__xmtbl_span_int"></colgroup> }
+            \int_add:Nn \l__xmtbl_col_int { \l__xmtbl_span_int }
+          }
+        \bool_if:NT \l__xmtbl_groups_bool { \HCode{\l__xmtbl_colgroups_tl} }
+      }
+  }
+\cs_new_protected:Npn \xmtblrowstart
+  {
+    \__xmtbl_read_heads:
+    \int_compare:nNnT { \HRow } = { 1 } { \__xmtbl_before_first_row: }
+  }
+\ExplSyntaxOff
+
+\Configure{tabularray}{%
+  \ifvmode\IgnorePar\fi\EndP
+  \gHAdvance\Next:TableNo by 1 \global\let\TableNo=\Next:TableNo
+  \HCode{<table class="tabularray \@currenvir" id="tbl-\TableNo">}%
+}{\ifvmode\IgnorePar\fi\EndP\HCode{</table>}}
+{\xmtblrowstart\HCode{<tr id="row-\TableNo-\HRow-">}}{\HCode{</tr>}}
+{\HCode{<\xmtblcelltag\space\xmtblcellscope\space id="cell\TableNo-\HRow-\HCol" style="\CellStyle" \CellAttributes>}}{\HCode{</\xmtblcelltag>}}
+%% \the\numexpr: \HRowspan and \HMultispan may hold a counter, not digits.
+{\Configure{tabularrayattributes}{rowspan="\the\numexpr\HRowspan\relax"}}
+{\Configure{tabularrayattributes}{colspan="\the\numexpr\HMultispan\relax"}}{}
+%% The stock rule sets column widths on td only; header cells are th now.
+\Configure{tabularraycolumnwidth}{\ifnum\HRow=1\Css{\#tbl-\TableNo\space td:nth-child(\HCol), \#tbl-\TableNo\space th:nth-child(\HCol){width:\HColWidth;}}\fi}
+\endinput
