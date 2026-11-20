@@ -293,3 +293,7 @@ document.addEventListener('click', (event) => {
   const btn = event.target.closest?.('.ximera-check-btn');
   if (btn) onCheck(btn.closest('.ximera-input-group'));
 }, true);
+
+// ---- multiple choice -------------------------------------------------------
+// Ordinary radio buttons for \choice; see choice-a11y.js.
+import(new URL('choice-a11y.js', import.meta.url).href);

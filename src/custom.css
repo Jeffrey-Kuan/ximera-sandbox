@@ -102,3 +102,28 @@ mjx-mtd [id^="ximera-placeholder"] {
 /* \underline{...} in text (and \uline, \ul from the ulem and soul packages).
    The conversion marks the words; these rules draw the line. */
 .underline, .uline, .textul { text-decoration: underline; }
+
+/* Multiple choice: the real radio button that static/choice-a11y.js puts in
+   each choice, and its label. The row keeps Ximera's look; the focus outline
+   moves from the row's old hand-made role to the row holding the focused
+   radio button. */
+.multiple-choice .xm-choice-input {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0 0.7em 0 0;
+  cursor: pointer;
+}
+.multiple-choice .xm-choice-label {
+  flex: 1;
+  cursor: pointer;
+}
+.multiple-choice .choice:focus-within {
+  outline: var(--ximera-focus-ring, 2px solid #1a5fb4);
+  outline-offset: var(--ximera-focus-ring-offset, 2px);
+  z-index: 1;
+}
+.multiple-choice .xm-choice-input:disabled,
+.multiple-choice .xm-choice-input:disabled + .xm-choice-label {
+  cursor: default;
+}
