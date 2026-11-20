@@ -271,8 +271,8 @@ Three things to keep in mind:
   browser, so the answers are inside the page. Anyone who chooses "View
   page source" in their browser can read them, whether or not your
   repository is private. A private repository hides your LaTeX files, your
-  comments in them, and anything you have not published. Treat the pages
-  as practice, not as a graded test.
+  comments in them, and anything you have not published. That is fine
+  for homework and practice. Do not use the pages for an exam.
 - GitHub changes what the program includes from time to time. Check
   https://education.github.com for what it offers now before you rely on
   it.
@@ -312,7 +312,8 @@ can see it.
 3. In Canvas, edit a **Page**, switch to the HTML editor with **</>**,
    paste, and save.
 
-Canvas removes all scripts from what you paste, for security. That has
+Canvas removes all scripts from what you paste, for security, and so do
+most other systems (Moodle, Blackboard, Brightspace and others). That has
 consequences:
 
 - Answer boxes, multiple choice, hints and expandable sections do not
