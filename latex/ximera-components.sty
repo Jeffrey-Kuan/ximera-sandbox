@@ -1,0 +1,41 @@
+%% ximera-components.sty
+%%
+%% Loads the interactive pieces of Ximera: \answer, multipleChoice and
+%% \choice, selectAll, wordChoice, freeResponse, hint, foldable, proof,
+%% dialogue, verbatim, video, xkcd.
+%%
+%% Why this file exists.  In the npm version of Ximera each of these is a
+%% package of its own (ximera-multiple-choice.sty and so on), installed by
+%% the build, and the class does not load them.  Without them the commands
+%% are undefined: LaTeX skips them, the build carries on, and a multiple
+%% choice question comes out on the web page as plain text.
+%%
+%% Use: \usepackage{ximera-components} in the preamble (src/preamble.tex).
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{ximera-components}[2026/11/20 v1.0 Load the Ximera component packages]
+
+%% For the web page the class copies every \newcommand made in the preamble
+%% into the page, for MathJax.  That is meant for the author's own macros.
+%% The component packages make many internal definitions (and reload font
+%% commands such as \rm and \bf), which must not be copied: MathJax would
+%% take them over its own.  Switch the copying off while they load.
+\let\xmcomp@savedargdef\@argdef
+\ifdefined\@oldargdef \let\@argdef\@oldargdef \fi
+
+%% ximera-choice.sty and ximera-xkcd.sty name their own commands in their
+%% version line before defining them.  Make those names harmless until then.
+%% (Not when the package is already loaded: that would undo its definitions.)
+\@ifpackageloaded{ximera-choice}{}%
+  {\let\choice\relax \let\otherchoice\relax \let\inlinechoice\relax}
+\@ifpackageloaded{ximera-xkcd}{}{\let\xkcd\relax}
+
+\@for\xmcomp@pkg:=answer,multiple-choice,select-all,word-choice,%
+free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
+  \IfFileExists{ximera-\xmcomp@pkg.sty}%
+    {\edef\xmcomp@tmp{\noexpand\RequirePackage{ximera-\xmcomp@pkg}}\xmcomp@tmp}%
+    {\PackageWarningNoLine{ximera-components}%
+       {ximera-\xmcomp@pkg.sty is not installed; skipped}}%
+}
+
+\let\@argdef\xmcomp@savedargdef
+\endinput
