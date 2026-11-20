@@ -266,7 +266,8 @@ Three things to keep in mind:
 - **The website stays public.** Anyone with the address can open it, and it
   cannot be put behind a login this way. (GitHub can restrict a website to
   chosen people only on its Enterprise plan, which GitHub Education does
-  not include.)
+  not include.) To keep the pages themselves off the public web, see "If
+  you do not want your content public at all" below.
 - **The answers are not hidden.** A page checks answers in the student's
   browser, so the answers are inside the page. Anyone who chooses "View
   page source" in their browser can read them, whether or not your
@@ -276,6 +277,48 @@ Three things to keep in mind:
 - GitHub changes what the program includes from time to time. Check
   https://education.github.com for what it offers now before you rely on
   it.
+
+## If you do not want your content public at all
+
+You can have GitHub build your pages without publishing them. Nothing is
+ever on the public web: you download the finished website as a zip file
+and decide yourself where it goes.
+
+1. Make the repository private. Either choose **Private** instead of
+   Public in Step 2, or later go to
+   **Settings > General > Danger Zone > Change visibility**. A free account
+   can have private repositories; it is only the website that needs a
+   public one.
+2. Tell the build not to publish. Go to **Settings > Secrets and variables
+   > Actions**, click the **Variables** tab, then **New repository
+   variable**. Type `PUBLISH` as the name and `false` as the value, and
+   click **Add variable**.
+3. Skip Step 3 ("Switch on the website"). If your site was already
+   published, open **Settings > Pages** and choose **Unpublish site** from
+   the menu next to its address. Keep in mind that a page that has been
+   public may already have been copied by a search engine.
+4. Build as usual: commit a change, or use **Run workflow** as in Step 4.
+5. When the build has a green check mark, click it on the **Actions** tab.
+   At the bottom of that page, under **Artifacts**, click **website**. A
+   zip file with the whole website downloads. It is kept for 30 days; any
+   later build makes a new one.
+
+**What you can do with the downloaded website**
+
+The pages only work fully when a web server delivers them. Two things
+that look as if they should work do not:
+
+- Opening the files on your own computer by double-clicking them. The text
+  appears, but answer boxes and choices do not work, because browsers
+  block the page's scripts for files opened that way.
+- Pasting the HTML into a course site's page editor. See the next section.
+
+What does work is putting the unzipped folder on a web server that asks
+for a login, for example web space from your institution behind its
+single sign-on. Ask your IT or teaching support where you can host "a
+folder of static web pages for enrolled students only". Without such a
+place, you still have the PDFs and the text of your pages, but not working
+questions.
 
 ## Using your pages in Canvas or another course site
 

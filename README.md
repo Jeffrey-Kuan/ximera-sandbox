@@ -42,6 +42,14 @@ your own copy of this course and publishing it as a website, step by step.
 3. Push. The Actions tab shows a green check when the site builds, or a red X
    with the LaTeX error if it does not.
 
+## Building without publishing
+
+Every build attaches the finished site to its run as a download named
+`website` (Actions tab, open the run, look under Artifacts). To build only
+and never publish to GitHub Pages, create a repository variable `PUBLISH`
+with the value `false` under Settings > Secrets and variables > Actions >
+Variables. `GETTING-STARTED.md` has the steps.
+
 ## Tagged PDFs
 
 Besides its web page, each activity is published as a tagged, accessible
