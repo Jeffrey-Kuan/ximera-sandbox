@@ -161,7 +161,11 @@ jobs:
           # \answer, multipleChoice, hint and the like live in packages of
           # their own (ximera-answer.sty, ...) which the class does not load.
           # Load every one the build has installed, right after the class.
-          extras=""
+          # ximera-choice.sty names \choice, \otherchoice and \inlinechoice
+          # in its own version line before it has defined them, which LaTeX
+          # reports as errors; make them harmless until the package defines
+          # them.
+          extras='\let\choice\relax\let\otherchoice\relax\let\inlinechoice\relax'
           for sty in src/.tex4npm/texmf/tex/latex/ximera-*.sty; do
             [ -f "$sty" ] && extras="$extras\\usepackage{$(basename "$sty" .sty)}"
           done
