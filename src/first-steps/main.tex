@@ -94,4 +94,34 @@ Plot the graph of $f$ in the Desmos window below.
 \end{center}
 \end{problem}
 
+\section{Folding and expanding}
+
+A \texttt{foldable} starts open. The arrow button folds it away, except for
+the part inside \verb|\unfoldable|, which always stays in view.
+
+\begin{foldable}
+\unfoldable{The Pythagorean theorem relates the sides of a right triangle.}
+If the legs have lengths $a$ and $b$ and the hypotenuse has length $c$, then
+$a^2+b^2=c^2$. For example, $3^2+4^2=5^2$.
+\end{foldable}
+
+An \texttt{expandable} starts closed, under a heading that opens it. Its two
+arguments are a class name for styling and the heading.
+
+\begin{expandable}{xmexpandable}{A worked example}
+To solve $2x+1=7$, subtract $1$ from both sides to get $2x=6$, then divide
+by $2$: $x=\answer{3}$.
+\end{expandable}
+
+An \texttt{accordion} is a list of such headings.
+
+\begin{accordion}
+\begin{accordion-item}[First step]
+Subtract $1$ from both sides.
+\end{accordion-item}
+\begin{accordion-item}[Second step]
+Divide both sides by $2$.
+\end{accordion-item}
+\end{accordion}
+
 \end{document}
