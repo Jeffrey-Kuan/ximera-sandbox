@@ -120,7 +120,7 @@ The easiest start is to change the page `first-steps` into what you want.
    that will be marked correct. Change the `\title{...}` line and the text
    as you like, and delete the questions you do not need.
 5. Click the green **Commit changes...** button at the top right, write a
-   few words such as "Change the first question", and click
+   few words (don't forget this step or it will freeze) such as "Change the first question", and click
    **Commit changes**.
 
 Committing starts a new build by itself. Watch it on the **Actions** tab;
