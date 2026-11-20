@@ -137,6 +137,15 @@ jobs:
       # as it is, so static/answer-box/after.html is published as
       # answer-box/after.html. A folder here must not share its name with a
       # folder under src/.
+      # \desmos{...} and \geogebra{...} become an <iframe> without a title, so
+      # a screen reader announces only "frame". Give each one a name.
+      - name: Name embedded Desmos and GeoGebra frames
+        run: |
+          find dist -name '*.html' -exec sed -i -E \
+            -e 's#<iframe src="https://www\.desmos\.com/calculator/#<iframe title="Desmos graph" src="https://www.desmos.com/calculator/#g' \
+            -e 's#<iframe src="https://www\.desmos\.com/3d/#<iframe title="Desmos 3D graph" src="https://www.desmos.com/3d/#g' \
+            -e 's#<iframe scrolling="no" src="https://www\.geogebra\.org/#<iframe title="GeoGebra applet" scrolling="no" src="https://www.geogebra.org/#g' {} +
+
       - name: Add static pages
         run: |
           if [ -d static ]; then
