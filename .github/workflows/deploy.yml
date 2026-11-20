@@ -158,12 +158,20 @@ jobs:
           cp -R src "$work/src"
           export TEXINPUTS="$PWD/src/.tex4npm/texmf//:$PWD/latex//:$PWD/TailorSwiftBot_Nov_2026//:"
           meta='\DocumentMetadata{lang=en,pdfversion=2.0,pdfstandard=UA-2,testphase=latest,tagging-setup={math/setup=mathml-SE}}'
+          # \answer, multipleChoice, hint and the like live in packages of
+          # their own (ximera-answer.sty, ...) which the class does not load.
+          # Load every one the build has installed, right after the class.
+          extras=""
+          for sty in src/.tex4npm/texmf/tex/latex/ximera-*.sty; do
+            [ -f "$sty" ] && extras="$extras\\usepackage{$(basename "$sty" .sty)}"
+          done
+          echo "component packages: $extras"
           made=0
           for f in "$work"/src/*/main.tex; do
             dir=$(dirname "$f"); name=$(basename "$dir")
             ( cd "$dir"
               for pass in 1 2; do
-                lualatex -interaction=nonstopmode -shell-escape -jobname=main-tagged "$meta\\RequirePackage{TailorSwiftBot_Nov_2026}\\input{main.tex}" > main-tagged.txt 2>&1 || true
+                lualatex -interaction=nonstopmode -shell-escape -jobname=main-tagged "$meta\\RequirePackage{TailorSwiftBot_Nov_2026}\\AddToHook{class/ximera/after}{$extras}\\input{main.tex}" > main-tagged.txt 2>&1 || true
               done )
             errors=$(grep -c '^!' "$dir/main-tagged.txt" || true)
             if [ "$errors" = 0 ] && [ -s "$dir/main-tagged.pdf" ]; then
@@ -173,7 +181,7 @@ jobs:
               grep -E 'Warning' "$dir/main-tagged.txt" | sort | uniq -c | sort -rn | head -5 | cut -c1-150
             else
               echo "::warning::No tagged PDF for $name: $errors LaTeX error(s)"
-              grep -A6 '^!' "$dir/main-tagged.txt" | head -60 | cut -c1-160
+              grep -A4 '^!' "$dir/main-tagged.txt" | grep -v '^--$' | head -28 | cut -c1-150
             fi
           done
           echo "tagged PDFs made: $made"
