@@ -1,3 +1,5 @@
+AI Transparency Statement: this was written with Claude Code, Fable 5.2. I reviewed the content before sharing it. 
+
 # Getting started: your own Ximera website, step by step
 
 This guide is for someone who has never used GitHub. At the end you will
@@ -35,7 +37,7 @@ Emails go out at most once a month.
 1. Go to https://github.com/signup
 2. Enter your email address, choose a password and a username. The username
    becomes part of your website's address, so pick one you are happy to
-   show, for example `jsmith-math`.
+   show, for example `tswift-math`.
 3. Confirm your email address with the code GitHub sends you.
 
 If you already have an account, sign in instead.
@@ -49,8 +51,8 @@ If you already have an account, sign in instead.
    `my-course`. This also becomes part of the website's address.
 4. Leave **Public** selected. (With a free account, the website only works
    for a public repository. Public means anyone can see the files,
-   including the answers written in them. To keep the files private, see
-   "Keeping your files private" below.)
+   including the answers written in them. See "Keeping your files
+   private" below for what can be hidden.)
 5. Click **Create repository**.
 
 After a few seconds you are looking at your own repository. Its address is
@@ -259,13 +261,76 @@ free upgraded plan that allows private repositories with a website.
    plan, then make your repository private under
    **Settings > General > Danger Zone > Change visibility**.
 
-Two things to keep in mind:
+Three things to keep in mind:
 
-- The **website stays public**, which is what students need. Only the
-  files behind it, with the answers, become private.
+- **The website stays public.** Anyone with the address can open it, and it
+  cannot be put behind a login this way. (GitHub can restrict a website to
+  chosen people only on its Enterprise plan, which GitHub Education does
+  not include.)
+- **The answers are not hidden.** A page checks answers in the student's
+  browser, so the answers are inside the page. Anyone who chooses "View
+  page source" in their browser can read them, whether or not your
+  repository is private. A private repository hides your LaTeX files, your
+  comments in them, and anything you have not published. Treat the pages
+  as practice, not as a graded test.
 - GitHub changes what the program includes from time to time. Check
   https://education.github.com for what it offers now before you rely on
   it.
+
+## Using your pages in Canvas or another course site
+
+A learning management system (LMS) such as Canvas only shows its pages to
+students enrolled in your course. There are three ways to bring your
+Ximera pages into it. They differ in what still works.
+
+**1. Show the live page inside a Canvas page (everything works)**
+
+1. In Canvas, create or edit a **Page**.
+2. Below the editing box, click the **</>** button to switch to the HTML
+   editor.
+3. Paste this line, with the address of your own page and a short
+   description of it:
+
+       <iframe src="https://YOUR-USERNAME.github.io/my-course/first-steps/main.html" title="First Steps" width="100%" height="800"></iframe>
+
+4. Save the page.
+
+Students see your page inside the course, with working answer boxes and
+formulas. The page itself is still public: this puts a window onto it in
+Canvas, it does not move it there. Some institutions limit which websites
+may be shown this way; if the box stays empty, ask your Canvas support.
+
+**2. Copy the page's HTML into a Canvas page (text only)**
+
+This puts a copy of the page in Canvas itself, where only your students
+can see it.
+
+1. Open your page in a browser, right-click it and choose **View page
+   source**.
+2. Select everything from the line that starts with `<main` to the line
+   `</main>`, and copy it.
+3. In Canvas, edit a **Page**, switch to the HTML editor with **</>**,
+   paste, and save.
+
+Canvas removes all scripts from what you paste, for security. That has
+consequences:
+
+- Answer boxes, multiple choice, hints and expandable sections do not
+  work. What remains is the text to read.
+- Check every formula after saving. Canvas shows formulas with its own
+  tools, which do not know the commands defined in your course.
+- Pictures still point to your website. Upload them to Canvas and insert
+  them again if the copy must not depend on the website.
+- When you change the page on GitHub, the copy in Canvas does not change.
+  You have to paste it again.
+
+Use this for reading material, not for practice questions.
+
+**3. Upload the PDF (private, nothing interactive)**
+
+Each page has a tagged PDF, with blanks where the answers go. Download it
+with the "This page as a tagged PDF" link and upload it to your course
+files. Only your students can open it, and the answers are not in it.
 
 ## If the build fails
 
@@ -284,8 +349,8 @@ at the top right, and look at what changed in the last commit.
 ## Good to know
 
 - **Everything is public**: the website and the LaTeX files, including the
-  answers inside `\answer{...}`, unless you follow "Keeping your files
-  private" above.
+  answers inside `\answer{...}`. "Keeping your files private" above
+  explains what can be hidden and what cannot.
 - **A PDF of every page**: each page has a link, "This page as a tagged
   PDF", to a version made for printing and for PDF screen readers. In it,
   answers appear as blanks.
