@@ -32,7 +32,7 @@ your own copy of this course and publishing it as a website, step by step.
     .devcontainer/             editing environment for GitHub Codespaces
     package.json               the Ximera packages the build uses
     tex4npm.config.js          where sources live (src) and where output goes (dist)
-    .github/workflows/deploy.yml   the build, and the optional upload to S3
+    .github/workflows/deploy.yml   the build, and publishing to GitHub Pages
 
 ## Adding an activity
 
@@ -100,21 +100,6 @@ stops by itself after 30 minutes without activity.
 
 Overleaf's Recompile button only makes a PDF preview. It does not run the web
 build, so the Actions run is the real check.
-
-## Publishing to S3 (optional)
-
-Without any settings the workflow only builds. To publish, add these under
-Settings > Secrets and variables > Actions:
-
-- Secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-- Variables: `S3_BUCKET`, `AWS_REGION`, and optionally `S3_PREFIX`
-
-`S3_PREFIX` puts the site in a folder of the bucket, so the course page is at
-`http://BUCKET.s3-website.REGION.amazonaws.com/PREFIX/sandbox.html`.
-
-The deploy removes files that are no longer part of the site. With a prefix it
-only touches that folder. Without a prefix it covers the whole bucket, so do
-not point a prefix-less deploy at a bucket that holds anything else.
 
 ## MathML intent
 
