@@ -40,7 +40,8 @@ If you already have an account, sign in instead.
    `my-course`. This also becomes part of the website's address.
 4. Leave **Public** selected. (With a free account, the website only works
    for a public repository. Public means anyone can see the files,
-   including the answers written in them.)
+   including the answers written in them. To keep the files private, see
+   "Keeping your files private" below.)
 5. Click **Create repository**.
 
 After a few seconds you are looking at your own repository. Its address is
@@ -174,6 +175,88 @@ To remove a page you do not want, delete its `\activity{...}` line from
 `src/sandbox.tex`. To change the course title, edit the `\title{...}` line
 in the same file.
 
+## Writing in Overleaf instead
+
+If you already write LaTeX in Overleaf, you can keep doing so. Overleaf
+becomes your editor, GitHub still stores the files, and GitHub still builds
+the website.
+
+This needs Overleaf's GitHub synchronization, which is a paid Overleaf
+feature. You have it if you pay for Overleaf yourself or if your
+institution provides Overleaf to you.
+
+**Set it up, once**
+
+1. In Overleaf, open **Account Settings**, find **GitHub Sync** and click
+   **Link to your GitHub account**. Sign in to GitHub and approve the
+   request.
+2. On Overleaf's project list, click **New Project > Import from GitHub**.
+3. Find your repository (for example `my-course`) and click
+   **Import to Overleaf**.
+
+Overleaf now has a project with the same files as your repository. Each
+activity is at `src/NAME/main.tex`, as on GitHub.
+
+**Each time you work**
+
+1. Open the GitHub sync box in the Overleaf editor. In the classic design
+   it is under **Menu > Sync > GitHub**; in the newer design, look for
+   **Integrations** in the bar at the left.
+2. If it says there are changes on GitHub, click
+   **Pull GitHub changes into Overleaf** first.
+3. Edit your files.
+4. Open the same box again and click **Push Overleaf changes to GitHub**.
+   Write a few words saying what you changed.
+
+Nothing is sent to GitHub until you push, and nothing arrives from GitHub
+until you pull. Overleaf does neither by itself.
+
+The push is a commit, so it starts a build like any other. Watch it on the
+**Actions** tab of your repository, and reload your website when the check
+mark is green.
+
+**Things to know**
+
+- Pull before you start, every time. If the files changed on GitHub since
+  your last pull, Overleaf may put your push on a separate branch, with a
+  name starting with `overleaf-`, instead of on the main one. Your website
+  does not change until that branch is merged: on GitHub, open the **Pull
+  requests** tab, click **New pull request**, choose the `overleaf-` branch
+  and click **Merge pull request**.
+- The website is built by GitHub, not by Overleaf. Overleaf's own
+  **Recompile** button only makes Overleaf's PDF preview, and that preview
+  may stop with errors, because some of the files the pages use are put in
+  place by the GitHub build and are not in your project. The website is
+  what counts.
+- An Overleaf project made some other way cannot be connected to an
+  existing repository afterwards. Start from **Import from GitHub**.
+
+## Keeping your files private
+
+In a public repository anyone can read your LaTeX files, including every
+answer. With a free GitHub account the website only works from a public
+repository.
+
+**GitHub Education** is GitHub's free program for teachers and students at
+schools, colleges and universities. One of its benefits for teachers is a
+free upgraded plan that allows private repositories with a website.
+
+1. Go to https://education.github.com and choose the option for teachers.
+2. Sign in, and apply with your school email address and proof that you
+   work there, such as a faculty ID or a page on your institution's website
+   that names you. Approval can take a few days.
+3. Once you are approved, follow GitHub's instructions to get the upgraded
+   plan, then make your repository private under
+   **Settings > General > Danger Zone > Change visibility**.
+
+Two things to keep in mind:
+
+- The **website stays public**, which is what students need. Only the
+  files behind it, with the answers, become private.
+- GitHub changes what the program includes from time to time. Check
+  https://education.github.com for what it offers now before you rely on
+  it.
+
 ## If the build fails
 
 A red X on the **Actions** tab means the build stopped, almost always
@@ -191,7 +274,11 @@ at the top right, and look at what changed in the last commit.
 ## Good to know
 
 - **Everything is public**: the website and the LaTeX files, including the
-  answers inside `\answer{...}`.
+  answers inside `\answer{...}`, unless you follow "Keeping your files
+  private" above.
+- **A PDF of every page**: each page has a link, "This page as a tagged
+  PDF", to a version made for printing and for PDF screen readers. In it,
+  answers appear as blanks.
 - **Editing more comfortably**: the green **Code** button has a
   **Codespaces** tab. "Create codespace on main" opens a full editor in
   your browser with LaTeX installed, where saving a file shows it as a PDF
