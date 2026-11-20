@@ -174,7 +174,11 @@ jobs:
             done
             uses="$uses\\usepackage{$(basename "$sty" .sty)}"
           done
-          extras="$lets$uses"
+          # In print, \answer{4} typesets the answer itself. Show a blank
+          # line instead, tagged so that a screen reader says "blank space".
+          # Answers marked as given, \answer[given]{4}, are still shown.
+          blank='\renewcommand\defaultAnswerFormat[1]{\MathMLintent{blank-space}{{\underline{\hspace{2em}}}}}'
+          extras="$lets$uses$blank"
           echo "component packages: $extras"
           made=0
           for f in "$work"/src/*/main.tex; do

@@ -48,6 +48,10 @@ loaded before the class; nothing has to be added to the activity. The
 page. An activity that LuaLaTeX cannot compile gets no PDF and no link, and
 the build shows a warning saying why.
 
+In the PDF an `\answer{...}` is printed as a blank line, tagged so that a
+screen reader says "blank space"; the answer itself is not shown. An answer
+marked as given, `\answer[given]{...}`, is still printed.
+
 ## Editing in a Codespace
 
 A Codespace is VS Code in the browser with TeX Live already installed.
