@@ -178,7 +178,10 @@ jobs:
           # line instead, tagged so that a screen reader says "blank space".
           # Answers marked as given, \answer[given]{4}, are still shown.
           blank='\renewcommand\defaultAnswerFormat[1]{\MathMLintent{blank-space}{{\underline{\hspace{2em}}}}}'
-          extras="$lets$uses$blank"
+          # In print, the correct \choice of a multipleChoice, selectAll or
+          # wordChoice is marked with a check mark. Leave the mark out.
+          nomark='\AddToHook{env/multipleChoice/begin}{\let\checkmark\relax}\AddToHook{env/selectAll/begin}{\let\checkmark\relax}\AddToHook{env/multipleChoice@/begin}{\let\checkmark\relax}'
+          extras="$lets$uses$blank$nomark"
           echo "component packages: $extras"
           made=0
           for f in "$work"/src/*/main.tex; do

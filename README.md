@@ -52,7 +52,8 @@ the build shows a warning saying why.
 
 In the PDF an `\answer{...}` is printed as a blank line, tagged so that a
 screen reader says "blank space"; the answer itself is not shown. An answer
-marked as given, `\answer[given]{...}`, is still printed.
+marked as given, `\answer[given]{...}`, is still printed. The check mark that
+print normally puts on the correct `\choice` is left out as well.
 
 ## Editing in a Codespace
 
