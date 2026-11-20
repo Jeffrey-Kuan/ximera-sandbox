@@ -48,8 +48,9 @@
 %% typeset as a tabular, or a tabularx when it has X columns, made from what
 %% tabularray read.  rowhead and xmcolhead are passed on to the tagging code
 %% as header rows and header columns, and a cell that spans rows or columns
-%% is declared as such.  The caption and the summary are printed above the
-%% table.  Nothing changes in how the table is written.
+%% is declared as such.  The corner, where header rows and header columns
+%% cross, is an ordinary cell, as on the web page.  The caption and the
+%% summary are printed above the table.  Nothing changes in how the table is written.
 %%
 %% Not converted (they are typeset by tabularray as before, untagged): a
 %% table in math mode, and long tables (longtblr).  The look is plainer than
@@ -123,6 +124,12 @@
                 \tl_put_right:Ne \l__xmtbl_pdf_cell_tl
                   { \exp_not:N \tagpdfsetup { table/multirow = \int_use:N \l__xmtbl_pdf_r_int } }
               }
+            %% The corner, where header rows and header columns cross, is
+            %% an ordinary cell, as on the web page; see \__xmtbl_pdf_fix_corner:.
+            \bool_lazy_and:nnT
+              { \int_compare_p:nNn {#1} < { \l__xmtbl_pdf_rowhead_int + 1 } }
+              { \int_compare_p:nNn {#2} < { \l__xmtbl_pdf_colhead_int + 1 } }
+              { \tl_put_right:Nn \l__xmtbl_pdf_cell_tl { \__xmtbl_pdf_note_corner: } }
             \tl_put_right:NV \l__xmtbl_pdf_cell_tl \l__xmtbl_pdf_text_tl
             \tl_set:Ne \l__xmtbl_pdf_align_tl { \__xmtbl_pdf_halign:nn {#1} {#2} }
             \bool_lazy_or:nnTF
@@ -234,6 +241,28 @@
     \group_end:
   }
 
+%% The corner.  The tagging code makes every cell of a header row and of a
+%% header column a header cell (TH), the corner included.  On the web page
+%% the corner is an ordinary cell, and the PDF follows that: each corner cell
+%% notes its structure number while it is typeset, and once the tagging code
+%% has marked the headers, at the end of the table, those cells are turned
+%% back into TD without a scope.
+\seq_new:N \g__xmtbl_pdf_corner_seq
+\cs_new_protected:Npn \__xmtbl_pdf_note_corner:
+  { \seq_gput_right:Ne \g__xmtbl_pdf_corner_seq { \tag_get:n { struct_num } } }
+\cs_new_protected:Npn \__xmtbl_pdf_fix_corner:
+  {
+    \seq_map_inline:Nn \g__xmtbl_pdf_corner_seq
+      {
+        \prop_if_exist:cT { g__tag_struct_##1_prop }
+          {
+            \__tag_struct_prop_gput:nnn {##1} { S } { /TD }
+            \prop_gremove:cn { g__tag_struct_##1_prop } { C }
+          }
+      }
+    \seq_gclear:N \g__xmtbl_pdf_corner_seq
+  }
+
 %% Is this table one that is converted?
 \prg_new_protected_conditional:Npnn \__xmtbl_pdf_if_convert: { TF }
   {
@@ -262,6 +291,16 @@
               { \__xmtbl_pdf_if_convert:TF { } { \__xmtbl_pdf_orig_calc: } }
             \cs_set_protected:Npn \__tblr_build_whole:
               { \__xmtbl_pdf_if_convert:TF { \__xmtbl_pdf_build: } { \__xmtbl_pdf_orig_build_whole: } }
+            %% Turn the corner cells back into ordinary cells, right after
+            %% the tagging code has marked the header rows.
+            \bool_lazy_and:nnT
+              { \cs_if_exist_p:N \__tbl_set_header_rows: }
+              { \cs_if_exist_p:N \__tag_struct_prop_gput:nnn }
+              {
+                \cs_new_eq:NN \__xmtbl_pdf_orig_set_header_rows: \__tbl_set_header_rows:
+                \cs_set_protected:Npn \__tbl_set_header_rows:
+                  { \__xmtbl_pdf_orig_set_header_rows: \__xmtbl_pdf_fix_corner: }
+              }
           }
       }
   }
