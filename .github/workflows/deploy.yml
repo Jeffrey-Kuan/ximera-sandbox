@@ -206,7 +206,7 @@ jobs:
                 "dist/$name/main.html") href="main.pdf" ;;
                 *) href="../../$name/main.pdf" ;;
               esac
-              sed -i "s|<main class=\"ximera-content\">|<main class=\"ximera-content\"><p class=\"tagged-pdf-link\"><a href=\"$href\">This page as a tagged PDF</a></p>|" "$page"
+              sed -i "s|\\(<main class=\"ximera-content\"[^>]*>\\)|\\1<p class=\"tagged-pdf-link\"><a href=\"$href\">This page as a tagged PDF</a></p>|" "$page"
             done
           done
 

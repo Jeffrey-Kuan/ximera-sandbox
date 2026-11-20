@@ -36,6 +36,18 @@ your own copy of this course and publishing it as a website, step by step.
 3. Push. The Actions tab shows a green check when the site builds, or a red X
    with the LaTeX error if it does not.
 
+## Tagged PDFs
+
+Besides its web page, each activity is published as a tagged, accessible
+PDF made from the same `.tex` file: `first-steps/main.pdf` next to
+`first-steps/main.html`, and so on. Each page has a link to its PDF at the
+top. The build compiles the activity a second time with LuaLaTeX, with
+tagging switched on and `TailorSwiftBot_Nov_2026/TailorSwiftBot_Nov_2026.sty`
+loaded before the class; nothing has to be added to the activity. The
+`\xm...` commands put the same MathML intent into the PDF as into the web
+page. An activity that LuaLaTeX cannot compile gets no PDF and no link, and
+the build shows a warning saying why.
+
 ## Editing in a Codespace
 
 A Codespace is VS Code in the browser with TeX Live already installed.
