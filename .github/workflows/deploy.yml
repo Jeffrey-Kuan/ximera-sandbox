@@ -9,6 +9,7 @@
 # look under Artifacts). To build only, and never publish to GitHub Pages,
 # create a repository variable named PUBLISH with the value false, under
 # Settings > Secrets and variables > Actions > Variables.
+# That switches off the S3 deploy as well.
 #
 # Every push and pull request builds the site. Deploying is optional: it only
 # happens on pushes to the default branch, and only when the S3_BUCKET variable
@@ -270,7 +271,7 @@ jobs:
           path: dist
 
       - name: Configure AWS credentials
-        if: vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: vars.PUBLISH != 'false' && vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -281,7 +282,7 @@ jobs:
       # prefix it only looks inside that folder; without one it covers the
       # whole bucket, so never point a prefix-less deploy at a shared bucket.
       - name: Deploy to S3
-        if: vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: vars.PUBLISH != 'false' && vars.S3_BUCKET != '' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         env:
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           S3_PREFIX: ${{ vars.S3_PREFIX }}
