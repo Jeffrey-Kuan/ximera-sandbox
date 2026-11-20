@@ -1,0 +1,17 @@
+%% ximera-components.4ht
+%%
+%% tex4ht reads this file by itself, for the web page, because the package
+%% ximera-components is loaded.  It applies xm-a11y.4ht at the very end of
+%% \begin{document}: by then tex4ht has read the class's and the component
+%% packages' own web settings, which xm-a11y.4ht replaces.  Applied any
+%% earlier, it would be overwritten by them.
+\AddToHook{begindocument/end}{%
+  \begingroup\endgroup
+  \let\xmcomp@savedargdef\@argdef
+  \ifdefined\@oldargdef \let\@argdef\@oldargdef \fi
+  \makeatletter
+  \input{xm-a11y.4ht}%
+  \makeatother
+  \let\@argdef\xmcomp@savedargdef
+}
+\endinput

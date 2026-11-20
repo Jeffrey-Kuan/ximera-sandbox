@@ -132,3 +132,82 @@ mjx-mtd [id^="ximera-placeholder"] {
 .select-all .xm-choice-input:disabled + .xm-choice-label {
   cursor: default;
 }
+
+/* ---- foldable, expandable, accordion, hint, theorem headings ----
+   Markup from latex/xm-a11y.4ht, behaviour from static/collapse-a11y.js. */
+
+/* expandable, accordion-item, hint: a heading holding a button, then the
+   panel. The heading's level varies, so nothing here names h3 or h4. */
+.accordion { margin: 0.8em 0; }
+.accordion-header {
+  margin: 0.4em 0 0;
+  font-size: 1em;
+  font-weight: 600;
+}
+.xm-accordion-button {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4em 0.7em;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: #f4f4f4;
+  border: 1px solid var(--ximera-color-neutral-border, #bbb);
+  border-radius: var(--ximera-radius, 4px);
+  cursor: pointer;
+}
+.xm-accordion-button::before {
+  content: "\25b6";
+  font-size: 0.7em;
+  transition: transform 0.15s;
+}
+.xm-accordion-button[aria-expanded="true"]::before { transform: rotate(90deg); }
+.xm-accordion-button:hover { background: #e9eef5; }
+.xm-accordion-button:focus-visible {
+  outline: var(--ximera-focus-ring, 2px solid #1a5fb4);
+  outline-offset: var(--ximera-focus-ring-offset, 2px);
+}
+.accordion-item {
+  padding: 0.5em 0 0.5em 1em;
+  margin: 0 0 0.6em 0.5em;
+  border-left: 3px solid var(--ximera-color-neutral-border, #bbb);
+}
+
+/* A closed panel keeps its box (so that find-in-page can open it); take
+   away the padding and line that would otherwise show as a stub. */
+.accordion-item[hidden] {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-left-color: transparent;
+}
+
+/* foldable: a native <details>, open at first; \unfoldable is its summary. */
+.foldable-details {
+  border-left: 3px solid var(--ximera-color-neutral-border, #bbb);
+  padding: 0.25em 0 0.25em 1em;
+  margin: 0.75em 0;
+}
+.foldable-details > summary { cursor: pointer; }
+.foldable-details > summary:focus-visible {
+  outline: var(--ximera-focus-ring, 2px solid #1a5fb4);
+  outline-offset: var(--ximera-focus-ring-offset, 2px);
+}
+
+/* Theorem-like environments: the name ("Theorem") is now a real heading at
+   the start of the box. Switch off the name that Ximera prints with CSS, and
+   make the heading look like it did: bold, on the same line as the text. */
+.theorem-like:has(> .theorem-like-heading)::before { content: none; }
+.theorem-like > .theorem-like-heading {
+  display: inline;
+  margin: 0 0.4em 0 0;
+  font-family: var(--ximera-font-sans, sans-serif);
+  font-size: 0.95em;
+  font-weight: 700;
+}
+.theorem-like > .theorem-like-heading::after { content: "."; }
+.theorem-like > .theorem-like-heading:has(~ .theorem-like-title) { margin-right: 0; }
+.theorem-like > .theorem-like-heading:has(~ .theorem-like-title)::after { content: none; }

@@ -37,5 +37,13 @@ free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
        {ximera-\xmcomp@pkg.sty is not installed; skipped}}%
 }
 
+%% Words used on the web page by xm-a11y.4ht (accessibility of foldable,
+%% expandable, accordion, hint, theorems and footnotes; applied through
+%% ximera-components.4ht).  Change them with \renewcommand in the preamble,
+%% after \usepackage{ximera-components}.
+\newcommand{\xmaHintWord}{Hint}
+\newcommand{\xmaFootnoteWord}{Footnote}
+\newcommand{\xmaExpandableWord}{This is an expandable}
+
 \let\@argdef\xmcomp@savedargdef
 \endinput

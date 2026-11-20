@@ -96,8 +96,8 @@ Plot the graph of $f$ in the Desmos window below.
 
 \section{Folding and expanding}
 
-A \texttt{foldable} starts open. The arrow button folds it away, except for
-the part inside \verb|\unfoldable|, which always stays in view.
+A \texttt{foldable} starts open and can be folded away, except for the part
+inside \verb|\unfoldable|, which always stays in view.
 
 \begin{foldable}
 \unfoldable{The Pythagorean theorem relates the sides of a right triangle.}
@@ -123,5 +123,23 @@ Subtract $1$ from both sides.
 Divide both sides by $2$.
 \end{accordion-item}
 \end{accordion}
+
+\subsection{Theorems and footnotes}
+
+The name of a theorem is a heading, and so is the heading of an expandable
+inside it, one level further down.
+
+\begin{theorem}[Pythagoras]
+In a right triangle with legs $a$ and $b$ and hypotenuse $c$, we have
+$a^2+b^2=c^2$.
+
+\begin{expandable}{xmexpandable}{Why this is true}
+Four copies of the triangle fit in a square of side $a+b$, leaving a square
+of side $c$.
+\end{expandable}
+\end{theorem}
+
+A footnote\footnote{The note appears next to its marker when the marker is
+pressed.} is a button that shows and hides its note.
 
 \end{document}

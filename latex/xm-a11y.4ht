@@ -1,0 +1,216 @@
+%% xm-a11y.4ht
+%%
+%% Accessibility of the web page for foldable, expandable, accordion, hint,
+%% theorem-like environments and footnotes.
+%%
+%% WHERE THIS COMES FROM.  These are the changes made in July 2026 in
+%% github.com/Jeffrey-Kuan/ximeraLatex (src/macros.dtx, accordion.dtx,
+%% foldable.dtx, theorems.dtx, footnotes.dtx), which were written for the
+%% older Ximera toolchain.  The npm version of Ximera was rebuilt from the
+%% upstream sources and does not contain them, so they are applied here, on
+%% top of the npm class and its component packages.
+%%
+%% Applied by ximera-components.4ht, for the web page only (tex4ht); the PDF
+%% is not affected.  The matching script is static/collapse-a11y.js and the
+%% matching styles are at the end of src/custom.css.
+%%
+%% What changes on the web page:
+%%   * Headings get the level that fits where they stand (\xmheadlevel), so
+%%     a screen reader's heading navigation meets no skipped levels and never
+%%     an invalid level: the result is always between h2 and h6.
+%%   * foldable is a native <details>/<summary>; \unfoldable is the summary.
+%%   * expandable and accordion-item get a real heading holding a button
+%%     (added by the script), which opens and closes the panel.
+%%   * hint is such an expandable with the visible heading "Hint".
+%%   * A theorem-like environment starts with a real heading ("Theorem").
+%%   * A footnote marker is a button that says "Footnote 1" and reports
+%%     whether the note is showing.
+%%
+%% Differences from the July 2026 version, because the npm page is built
+%% differently:
+%%   * Theorems keep the npm markup and classes (the npm styles rely on
+%%     them) and get the heading as first child, without a <section> wrapper.
+%%   * The hint heading is visible text.  The old platform painted a hint
+%%     bar itself, so a hidden label was enough there.
+%%   * The words "Hint", "Footnote" and the default heading of an untitled
+%%     expandable are the macros below, because the npm class ships no
+%%     dictionary files.  They are defined in ximera-components.sty; change
+%%     them with \renewcommand after the preamble line that loads it.
+
+%% ---- heading levels -------------------------------------------------------
+%% tex4ht writes \section as <h3>, \subsection as <h4>, \subsubsection as
+%% <h5>.  A heading made at the current position gets level 3, plus one for
+%% each sectioning level entered, plus xmHeadOffset.  Every environment that
+%% makes a heading and can contain more of them steps xmHeadOffset for its
+%% body, so that nested headings land one level deeper.
+\newcounter{xmHeadOffset}
+%% Sectioning depth is tracked with hooks, not read from the section
+%% counters: the class sets secnumdepth so that those counters do not step
+%% reliably, and starred sectioning commands never step them.
+\newcounter{xmSecDepth}
+\AddToHook{cmd/section/before}{\setcounter{xmSecDepth}{1}}
+\AddToHook{cmd/subsection/before}{\setcounter{xmSecDepth}{2}}
+\AddToHook{cmd/subsubsection/before}{\setcounter{xmSecDepth}{3}}
+\newcommand{\xmheadlevelraw}{\numexpr 3
+  +\value{xmSecDepth}
+  +\value{xmHeadOffset}\relax}
+%% Clamped to 2..6.  HTML has no h7, so nesting of any depth stops at h6; the
+%% lower bound keeps a tampered or unbalanced xmHeadOffset from ever giving
+%% h1 (the page title) or a tag that does not exist, such as h0.
+\newcommand{\xmheadlevel}{\ifnum\xmheadlevelraw>6 6\else\ifnum\xmheadlevelraw<2 2\else\the\xmheadlevelraw\fi\fi}
+\newcommand{\thmheadlevel}{\xmheadlevel}
+%% Present for a screen reader, not shown on screen.
+\newcommand{\xmSrOnly}[1]{\HCode{<span style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;">}#1\HCode{</span>}}
+
+%% ---- foldable ---------------------------------------------------------------
+%% <details open>: a foldable starts open.  Its <summary> is the \unfoldable
+%% at its start, which therefore stays in view when the rest is folded away.
+%% The class is "foldable-details", not "foldable", on purpose: Ximera's
+%% script attaches its own arrow button to every ".foldable".  open is
+%% written open="open" because the build drops bare attributes.
+\newif\ifxm@in@foldable
+\newif\ifxm@foldable@fresh
+\renewenvironment{foldable}{%
+  \stepcounter{identification}%
+  \ifvmode \IgnorePar\fi \EndP%
+  \HCode{<details open="open" id="foldable\arabic{identification}" class="foldable-details">\Hnewline}%
+  \xm@in@foldabletrue
+  \global\xm@foldable@freshtrue
+}{%
+  \global\xm@foldable@freshfalse
+  \ifvmode\IgnorePar\fi\EndP\HCode{</details>}\IgnoreIndent
+}
+%% HTML allows one summary per details.  A later \unfoldable in the same
+%% foldable becomes a plain span and folds away with the rest; the author is
+%% warned.  Outside a foldable, \unfoldable is a plain span as before.
+\renewcommand{\unfoldable}[1]{%
+  \ifxm@in@foldable
+    \ifxm@foldable@fresh
+      \global\xm@foldable@freshfalse
+      \ifvmode \IgnorePar\fi \EndP%
+      \HCode{<summary class="unfoldable">}#1\HCode{</summary>\Hnewline}%
+    \else
+      \PackageWarning{ximera}{Only the first \string\unfoldable\space at the start of a foldable stays visible when folded (it becomes the summary); this one will fold away with the rest of the content}%
+      \HCode{<span class="unfoldable">}#1\HCode{</span>}%
+    \fi
+  \else
+    \HCode{<span class="unfoldable">}#1\HCode{</span>}%
+  \fi}
+
+%% ---- accordion, expandable, hint ---------------------------------------------
+%% The heading has class "accordion-header", so that scripts and styles do
+%% not depend on its level.  An empty title would be a heading without a
+%% name; it gets visible default text, which also shows the author that the
+%% title is missing.
+\renewenvironment{accordion-item}[1][]{\stepcounter{identification}\ifvmode \IgnorePar\fi \EndP\HCode{<h\xmheadlevel\space class="accordion-header">}\if\relax\detokenize{#1}\relax\xmaExpandableWord\else#1\fi\HCode{</h\xmheadlevel><div id="accordion-item\arabic{identification}" class="accordion-item">}\stepcounter{xmHeadOffset}
+}{\addtocounter{xmHeadOffset}{-1}\HCode{</div>}\IgnoreIndent}
+
+\ifdefined\xmNotExpandableAsAccordion\else
+\let\expandable\relax
+\let\endexpandable\relax
+\newenvironment{expandable}[2]{%
+  \stepcounter{identification}%
+  \ifvmode \IgnorePar\fi \EndP%
+  \HCode{<div class="accordion">\Hnewline}%
+  \HCode{<h\xmheadlevel\space class="accordion-header #1">}%
+  \if\relax\detokenize{#2}\relax\xmaExpandableWord\else#2\fi
+  \HCode{</h\xmheadlevel>\Hnewline}%
+  \HCode{<div id="accordion-item\arabic{identification}" class="accordion-item #1-content">\Hnewline}%
+  \stepcounter{xmHeadOffset}%
+}%
+{%
+  \addtocounter{xmHeadOffset}{-1}%
+  \HCode{</div>\Hnewline</div>\Hnewline}\IgnoreIndent
+}
+\fi
+
+%% The class name is "xm-hint", not "xmhint": Ximera's own hint script acts
+%% on h3.xmhint only, which would work for a hint at level 3 and not at any
+%% other level.  static/collapse-a11y.js handles every level the same way.
+\ifdefined\xmNotHintAsExpandable\else
+\ifdefined\xmNotExpandableAsAccordion\else
+\RenewEnviron{hint}{%
+ \begin{expandable}{xm-hint}{\xmaHintWord}%
+   \BODY%
+ \end{expandable}%
+}
+\fi\fi
+
+%% ---- theorem-like environments -----------------------------------------------
+%% A real heading with the name of the environment, at the level that fits,
+%% as the first thing in the box.  The npm styles print that name with CSS,
+%% which a screen reader cannot reach as a heading; src/custom.css switches
+%% the CSS name off where the heading is present.
+\def\xma@cap#1#2\@nil{\uppercase{#1}#2}
+\newcommand{\xma@thmname}[1]{\@ifpackageloaded{babel}{\GetTranslation{#1}}{\xma@cap#1\@nil}}
+\renewcommand{\ConfigureTheoremEnv}[1]{%
+\renewenvironment{#1}[1][]{\refstepcounter{problem}%
+\ifthenelse{\equal{##1}{}}{}{%
+  \HCode{<span class="theorem-like-title">}##1\HCode{</span>}%
+}}{}
+\ConfigureEnv{#1}
+  {\stepcounter{identification}\ifvmode \IgnorePar\fi \EndP
+   \HCode{<div class="theorem-like problem-environment #1" id="problem\arabic{identification}" titletext=" \GetTranslation{#1}">\Hnewline<h\xmheadlevel\space class="theorem-like-heading">}\xma@thmname{#1}\HCode{</h\xmheadlevel>}%
+   \stepcounter{xmHeadOffset}}
+  {\addtocounter{xmHeadOffset}{-1}%
+   \ifvmode\IgnorePar\fi\EndP\HCode{</div>}\IgnoreIndent}
+  {}{}%
+}
+\@for\xma@env:=theorem,algorithm,axiom,claim,conclusion,condition,conjecture,%
+corollary,criterion,definition,example,explanation,fact,lemma,formula,idea,%
+notation,model,observation,proposition,paradox,procedure,remark,summary,%
+template,warning\do{%
+  \@ifundefined{\xma@env}{}{\expandafter\ConfigureTheoremEnv\expandafter{\xma@env}}}
+
+%% ---- footnotes ---------------------------------------------------------------
+%% The marker is a button with a name ("Footnote 1"), aria-expanded kept in
+%% step with the note, and aria-controls pointing at it.  The click target is
+%% enlarged by padding with a matching negative margin, so the layout does
+%% not move.  Colour is left to fncolor; the parentheses are the cue that
+%% does not depend on colour.
+\renewcommand{\footnote}[1]{\ifvmode\ShowPar\fi
+    \stepcounter{footnoteNum}%
+    \HCode{
+    <script type="text/javascript">
+            function footnotefun(btn, ID) {
+              var x = document.getElementById(ID);
+              var expanded = btn.getAttribute("aria-expanded") === "true";
+              btn.setAttribute("aria-expanded", expanded ? "false" : "true");
+              x.style.display = expanded ? "none" : "inline";
+            }}
+    \HCode{</script>}
+    \expandafter\HCode{
+    <span style="position=relative;
+            vertical-align=baseline;">
+            <button onclick='footnotefun(this, "footnote\roman{footnoteNum}")'
+                aria-expanded="false"
+                aria-controls="footnote\roman{footnoteNum}"
+                aria-label="\xmaFootnoteWord\space\arabic{footnoteNum}"
+                style=
+                "background:none!important;
+                 color:inherit;
+                 border:none;
+                 padding:0.25em!important;
+                 margin:-0.25em;
+                 font: inherit;
+                 cursor: pointer;"
+                >
+             <sup>}[\arabic{footnoteNum}]
+             \HCode{</sup></button>}
+    \expandafter\HCode{
+            <span id="footnote\roman{footnoteNum}"
+                style=
+                "display:none;
+                min-width:20em;
+                position:relative;
+                left:2px;
+                padding:5px;
+                word-wrap:break-word;
+                z-index=9999;
+                overflow=auto;"
+                >
+            }
+            \textcolor{fncolor}{(#1)}%
+        \HCode{</span></span>}
+    }
+\endinput

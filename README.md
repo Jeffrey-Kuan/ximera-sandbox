@@ -20,8 +20,10 @@ your own copy of this course and publishing it as a website, step by step.
     src/custom.css             site-specific styling
     static/                    hand-written pages, copied into the site as they are
     latex/ximera-components.sty  loads \answer, multipleChoice, hint and the other interactive pieces
+    latex/xm-a11y.4ht            web accessibility of foldable, expandable, hint, theorems, footnotes
     static/answer-a11y.js      screen reader support for \answer boxes, loaded on every page
     static/choice-a11y.js      ordinary radio buttons and checkboxes for \choice
+    static/collapse-a11y.js    opens and closes expandable, accordion and hint
     static/answer-box/         the stock answer box on its own page, without (before)
                                and with (after) MathJax's assistive MathML
     latex/xmintent.sty         the \xm... commands for LaTeX (web version of TailorSwiftBot.sty)
