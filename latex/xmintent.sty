@@ -26,6 +26,7 @@
 %%   \xmvec{v}  \xmvec*{v}   \xmunitvec{v}  \xmunitvec*{v}
 %%   \xmdot{u}{v}   \xmcross{u}{v}
 %%   \xmblank[<width>]   \xmblankspoken{<words>}
+%%   \xmlang{<language code>}{<text>}
 %% and, for tabularray tables, the settings xmcolhead, caption and summary.
 %%
 %% Not carried over: the parts of TailorSwiftBot.sty about PDF structure
@@ -143,6 +144,19 @@
   {
     \NewDocumentCommand \xmblank { O{1.5in} }
       { \mode_leave_vertical: \rule [ -.2ex ] {#1} { .4pt } }
+  }
+
+%% ---- words in another language -----------------------------------------------
+% \xmlang{<language code>}{<text>}, for example \xmlang{el}{τέλειος}.
+% Web: the text is wrapped in <span lang="...">, which is what tells a
+% screen reader to switch voice.  PDF made without tagging: the text as it is.
+\cs_if_exist:NTF \HCode
+  {
+    \NewDocumentCommand \xmlang { m m }
+      { \mode_leave_vertical: \HCode { <span~lang="#1"> } #2 \HCode { </span> } }
+  }
+  {
+    \NewDocumentCommand \xmlang { m m } { #2 }
   }
 
 \ExplSyntaxOff

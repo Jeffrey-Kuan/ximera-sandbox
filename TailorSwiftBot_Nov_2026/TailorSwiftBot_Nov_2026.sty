@@ -124,13 +124,29 @@
 %%   tagging the table is tabularray's own and the three new settings are
 %%   ignored.  Not converted: longtblr, and tables in math mode.
 %%
+%% Part 14: \xmlang{<language>}{<text>}  words in another language
+%%   The word \xmlang{el}{τέλειος} means complete.
+%%   In a tagged PDF the text is marked with its language (a Span with the
+%%   attribute Lang), so that a screen reader can switch voice for it and
+%%   back.  The first argument is a language code: el Greek, grc ancient
+%%   Greek, fr French, de German, es Spanish, la Latin, ru Russian, zh
+%%   Chinese, ...  For text inside one paragraph, not for whole paragraphs.
+%%   Note that babel's \foreignlanguage does not set this mark.
+%%   The command marks the language only.  The letters also need a font that
+%%   has them; the default font has no Greek or Cyrillic.  For Greek, put in
+%%   the preamble:
+%%       \usepackage[english]{babel}
+%%       \babelprovide[import, onchar=ids fonts]{greek}
+%%       \babelfont[greek]{rm}{CMU Serif}
+%%   and Greek letters typed anywhere are set in that font by themselves.
+%%
 %% Fixity properties (v1.9).  composed-with, dot-product and cross-product carry
 %%   the property :infix, and inverse and transpose carry :postfix, so that a
 %%   reader says "f composed with g", "f inverse", "A transpose".  Without the
 %%   property, MathCAT versions that do not know these names read them as a
 %%   function call: "composed with of f comma g", "inverse of f".
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.2 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables]
+\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.3 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables, language marks]
 \newif\ifTailorSwiftBot@titlemap \TailorSwiftBot@titlemaptrue
 \DeclareOption{notitlemap}{\TailorSwiftBot@titlemapfalse}
 \ProcessOptions\relax
@@ -730,6 +746,35 @@
             \tag_mc_begin_pop:n { }
           }
           { \__tsb_blank_rule:n {#1} }
+      }
+  }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 14: \xmlang -- words in another language
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The text goes into a Span of its own that carries the language.  As with
+% \xmblank, the push and pop pair suspends the enclosing paragraph's marked
+% content around the Span and does nothing when no marked content is open.
+% In math mode, and without tagging, the text is typeset unchanged.
+
+% \xmlang{<language code>}{<text>}
+\NewDocumentCommand \xmlang { m m }
+  {
+    \mode_if_math:TF
+      { #2 }
+      {
+        \mode_leave_vertical:
+        \cs_if_exist:NTF \tag_struct_begin:n
+          {
+            \tag_mc_end_push:
+            \tag_struct_begin:n { tag = Span , lang = #1 }
+            \tag_mc_begin:n { tag = Span }
+            #2
+            \tag_mc_end:
+            \tag_struct_end:
+            \tag_mc_begin_pop:n { }
+          }
+          { #2 }
       }
   }
 
