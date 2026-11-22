@@ -302,3 +302,8 @@ import(new URL('choice-a11y.js', import.meta.url).href);
 // Headings with a button that opens and closes the panel; see
 // collapse-a11y.js.
 import(new URL('collapse-a11y.js', import.meta.url).href);
+
+// ---- pictures ---------------------------------------------------------------
+// The description from \xmalt as the picture's real alternative text; see
+// alt-a11y.js.
+import(new URL('alt-a11y.js', import.meta.url).href);
