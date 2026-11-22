@@ -95,7 +95,7 @@ Cmd+Shift+R (Mac).
 
 ## Step 6. See what you already have
 
-Your copy is not empty. It comes with six finished pages, which are
+Your copy is not empty. It comes with seven finished pages, which are
 already on your website. Each page of a course is called an **activity**
 and has a folder of its own inside the `src` folder:
 
@@ -107,6 +107,7 @@ and has a folder of its own inside the `src` folder:
 | `src/intent/main.tex` | Formulas written so that screen readers read them well |
 | `src/matrices/main.tex` | Answer boxes inside matrices |
 | `src/tables/main.tex` | Tables that screen readers can read by row and column |
+| `src/showcase/main.tex` | One example of every accessibility feature, for testing with a screen reader |
 
 One more file, `src/sandbox.tex`, is the course itself: its title and the
 list of activities.

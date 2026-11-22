@@ -140,13 +140,27 @@
 %%       \babelfont[greek]{rm}{CMU Serif}
 %%   and Greek letters typed anywhere are set in that font by themselves.
 %%
+%% Part 15: \xmalt{<description>}  alternative text for a picture
+%%   \includegraphics[width=4in]{photo.png}
+%%   \xmalt{Two people standing on a sidewalk.}
+%%   Write \xmalt directly after the picture it describes: after
+%%   \includegraphics, after a tikzpicture, or after Ximera's image
+%%   environment (inside it works too).  In a tagged PDF the description
+%%   becomes the Alt text of that picture's Figure tag, which is what a
+%%   screen reader reads in place of the picture; it is not printed.
+%%   Without \xmalt, LaTeX uses the file name as Alt text ("photo.png"),
+%%   and a tikzpicture gets "Picture without a description".
+%%   \includegraphics[alt={...}] and \begin{tikzpicture}[alt={...}], which
+%%   LaTeX provides itself, also work; \xmalt is the form that Ximera web
+%%   pages understand as well.
+%%
 %% Fixity properties (v1.9).  composed-with, dot-product and cross-product carry
 %%   the property :infix, and inverse and transpose carry :postfix, so that a
 %%   reader says "f composed with g", "f inverse", "A transpose".  Without the
 %%   property, MathCAT versions that do not know these names read them as a
 %%   function call: "composed with of f comma g", "inverse of f".
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.3 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables, language marks]
+\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.4 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables, language marks, alt text for pictures]
 \newif\ifTailorSwiftBot@titlemap \TailorSwiftBot@titlemaptrue
 \DeclareOption{notitlemap}{\TailorSwiftBot@titlemapfalse}
 \ProcessOptions\relax
@@ -779,6 +793,91 @@
   }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 15: \xmalt -- alternative text for a picture
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \xmalt comes after the picture, so the Figure structure of the picture
+% already exists when the description is read.  The description is written
+% into that structure afterwards: \xmalt looks back through the structures
+% made so far for the newest Figure, and sets its Alt entry.  It only looks
+% back as far as the Figure that the previous \xmalt described, so that a
+% description can never land on an earlier, unrelated picture.
+%
+% This uses tagpdf's internal store of structures (there is no public way
+% to change a structure once it is made).  Should those internals change,
+% \xmalt warns and the picture keeps the Alt text LaTeX gave it.
+
+\int_new:N \g__tsb_alt_used_int
+\int_new:N \l__tsb_alt_n_int
+\bool_new:N \l__tsb_alt_found_bool
+\str_new:N \l__tsb_alt_str
+\msg_new:nnn { TailorSwiftBot } { alt-no-picture }
+  { \token_to_str:N \xmalt\c_space_tl found~no~picture~before~it~to~describe~\msg_line_context: . }
+
+\cs_new_protected:Npn \__tsb_alt_attach:n #1
+  {
+    \bool_set_false:N \l__tsb_alt_found_bool
+    \bool_lazy_and:nnT
+      { \cs_if_exist_p:N \c@g__tag_struct_abs_int }
+      { \cs_if_exist_p:N \__tag_struct_prop_gput:nnn }
+      {
+        \int_set:Nn \l__tsb_alt_n_int { \c@g__tag_struct_abs_int }
+        \int_while_do:nNnn { \l__tsb_alt_n_int } > { \g__tsb_alt_used_int }
+          {
+            \str_if_eq:eeTF
+              { \prop_item:cn { g__tag_struct_ \int_use:N \l__tsb_alt_n_int _prop } { S } }
+              { /Figure }
+              {
+                \bool_set_true:N \l__tsb_alt_found_bool
+                \int_gset_eq:NN \g__tsb_alt_used_int \l__tsb_alt_n_int
+                \str_set_convert:Nenn \l__tsb_alt_str
+                  { \text_purify:n {#1} } { default } { utf16/hex }
+                \exp_args:Nnne \__tag_struct_prop_gput:nnn
+                  { \int_use:N \l__tsb_alt_n_int } { Alt } { < \l__tsb_alt_str > }
+                \int_zero:N \l__tsb_alt_n_int
+              }
+              { \int_decr:N \l__tsb_alt_n_int }
+          }
+      }
+    \bool_if:NF \l__tsb_alt_found_bool
+      { \msg_warning:nn { TailorSwiftBot } { alt-no-picture } }
+  }
+\cs_generate_variant:Nn \str_set_convert:Nnnn { Ne }
+
+% With tagging: attach the description, print nothing.  Without tagging the
+% class's own \xmalt (Ximera prints the description in small grey type) is
+% left as it is; in other classes \xmalt then does nothing.
+\AddToHook { begindocument }
+  {
+    \bool_lazy_and:nnTF
+      { \cs_if_exist_p:N \tag_if_active:TF }
+      { ! \cs_if_exist_p:N \HCode }
+      {
+        \tag_if_active:TF
+          { \DeclareDocumentCommand \xmalt { +m } { \__tsb_alt_attach:n {#1} } }
+          { \ProvideDocumentCommand \xmalt { +m } { } }
+      }
+      { \ProvideDocumentCommand \xmalt { +m } { } }
+  }
+% A tikzpicture is not a Figure unless it is given a description, and then
+% \xmalt would find nothing to describe.  Make every tikzpicture a Figure
+% with a stand-in description; \xmalt, or the picture's own alt key,
+% replaces it.  (At the very end of \begin{document}: the tagging code
+% defines the alt key for tikz late.)
+\AddToHook { begindocument/end }
+  {
+    \bool_lazy_and:nnT
+      { \cs_if_exist_p:N \tikzpicture }
+      { \cs_if_exist_p:N \tag_if_active:TF }
+      {
+        \tag_if_active:T
+          {
+            \keys_if_exist:nnT { tikz / tagging } { alt }
+              { \keys_set:nn { tikz / tagging } { alt = { Picture~without~a~description } } }
+          }
+      }
+  }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Part 13: tabularray tables (tblr) tagged as tables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LaTeX's tagging code can tag tabular and tabularx, with header cells, but
@@ -1140,7 +1239,29 @@
       \global\tsb@ximera@titlelevel=#1\relax
       \tsb@ximera@settag{H#1}}%
   \fi}
+% Ximera's image environment scales its contents with \resizebox.  A
+% \caption written inside it, which works on the web page, cannot be typeset
+% there in print: the PDF build stops with errors.  Take the caption out of
+% the box and set it after the picture.  (\xmalt inside the environment is
+% no problem: see Part 15.)
+\let\tsb@img@cap\@empty
+\newcommand\tsb@ximera@image{%
+  \@ifundefined{RenewEnviron}{}{%
+    \RenewEnviron{image}[1][3in]{%
+      \global\let\tsb@img@cap\@empty
+      \begin{center}%
+        \begingroup
+        \renewcommand\caption[2][]{\gdef\tsb@img@cap{####2}}%
+        \resizebox{##1}{!}{\BODY}%
+        \endgroup
+      \end{center}%
+      \ifx\tsb@img@cap\@empty\else
+        \@ifundefined{@captype}%
+          {{\par\centering\small\tsb@img@cap\par}}%
+          {\caption{\tsb@img@cap}}%
+      \fi}}}
 \newcommand\tsb@ximera@setup{%
+  \tsb@ximera@image
   \AddToHook{begindocument/end}{%
     \ifx\@author\tsb@ximera@noauthor
       \PackageWarningNoLine{TailorSwiftBot}{No \string\author\space given}%

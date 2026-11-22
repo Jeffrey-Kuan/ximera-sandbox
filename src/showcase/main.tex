@@ -1,0 +1,143 @@
+\documentclass{ximera}
+\input{../preamble.tex}
+
+\title{Accessibility Showcase}
+
+\begin{document}
+\begin{abstract}
+One example of every accessibility feature of this sandbox, on one page.
+\end{abstract}
+\maketitle
+
+This page exists to be tested. Read it with a screen reader as a web page,
+then open its tagged PDF (the link at the top right) and read that, or
+look at the Tags panel in Adobe Acrobat. Each part says what to listen or
+look for.
+
+\section{Headings}
+
+The title of the page is a level 1 heading and each section a level 2
+heading. A subsection is one level further down, and so is the head of a
+theorem inside it.
+
+\subsection{A subsection with a theorem}
+
+\begin{theorem}[Pythagoras]
+In a right triangle with legs $a$ and $b$ and hypotenuse $c$, we have
+$a^2+b^2=c^2$.
+\end{theorem}
+
+\section{Formulas}
+
+Each formula carries MathML, and these commands add what the notation
+means, so that it is read correctly:
+
+\begin{itemize}
+\item an absolute value, $\xmabs{x-3}$, and a determinant, $\xmdet{A}$;
+\item a length with a unit, $5\,\xmunits{cm}$, and an angle, $90\xmdeg$;
+\item a point, $\xmpoint{2,5}$, and an interval, $\xminterval{[0,1)}$;
+\item a composition, $\xmcompose{f}{g}(x)$, and an inverse, $\xminv{f}(x)$;
+\item a dot product of vectors, $\xmdot{\xmvec{u}}{\xmvec{v}}$.
+\end{itemize}
+
+A displayed formula:
+\[
+\xmabs{a+b}\le\xmabs{a}+\xmabs{b}.
+\]
+
+\section{Blanks and answers}
+
+A line to write on is announced as a blank. Name: \xmblank[2in]
+
+\begin{problem}
+An answer box. On the web page it is a box to type in; in the PDF it is a
+blank. $2+2=\answer{4}$
+\end{problem}
+
+\section{Lists and choices}
+
+A numbered list is tagged as a list, with its items:
+
+\begin{enumerate}
+\item Read the question.
+\item Choose an answer.
+\item Check it.
+\end{enumerate}
+
+\begin{problem}
+On the web page these choices are radio buttons; in the PDF they are a
+list. Which number is prime?
+
+\begin{multipleChoice}
+\choice{$21$}
+\choice[correct]{$23$}
+\choice{$27$}
+\end{multipleChoice}
+\end{problem}
+
+\section{A table}
+
+The first row holds column headers and the first column holds row headers.
+Moving through the cells, a screen reader announces the headers of each one.
+
+\begin{center}
+\begin{tblr}{colspec={lcc}, hlines, vlines, rowhead=1, xmcolhead=1,
+    caption={Quiz scores}, summary={One row for each student, one column for each quiz.}}
+Student & Quiz 1 & Quiz 2 \\
+Ada     & 9      & 10     \\
+Emmy    & 8      & 7      \\
+\end{tblr}
+\end{center}
+
+\section{Pictures}
+
+A picture from a file, with a caption and a description. The description
+is what a screen reader reads in place of the picture.
+
+\begin{figure}
+\begin{image}
+  \includegraphics[width=3in]{sample.png}
+\end{image}
+\caption{A sample picture.}
+\xmalt{A rectangle filled with a smooth colour gradient, blue on the left and orange on the right.}
+\end{figure}
+
+A drawn picture, with a description:
+
+\begin{center}
+\begin{tikzpicture}[scale=.75]
+  \draw[<->] (-1,0)--(4,0) node[right]{$x$};
+  \draw[<->] (0,-1)--(0,4) node[above]{$y$};
+  \draw[thick] (-0.5,-0.5)--(3.5,3.5);
+  \fill (2,2) circle (2pt) node[right]{$(2,2)$};
+\end{tikzpicture}
+\end{center}
+\xmalt{Coordinate axes with the line y equals x drawn through the origin, and the point 2 comma 2 marked on it.}
+
+\section{Words in another language}
+
+The French phrase \xmlang{fr}{raison d'\^etre} is marked as French, so a
+screen reader can switch voice for it and back.
+
+\section{Links and footnotes}
+
+A link has a name that says where it goes:
+\href{https://www.w3.org/WAI/fundamentals/accessibility-intro/}{Introduction to Web Accessibility, from the W3C}.
+
+A footnote\footnote{On the web page the marker is a button that shows and
+hides this note.} is tagged as a note.
+
+\section{Text that opens and closes}
+
+On the web page these are operated with a button that says whether the
+text is open. In the PDF their text is simply printed.
+
+\begin{hint}
+A hint, closed until it is asked for.
+\end{hint}
+
+\begin{expandable}{xmexpandable}{A worked example}
+To solve $2x+1=7$, subtract $1$ and divide by $2$.
+\end{expandable}
+
+\end{document}

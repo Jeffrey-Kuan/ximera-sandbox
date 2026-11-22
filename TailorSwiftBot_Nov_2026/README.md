@@ -22,6 +22,8 @@ With the Ximera class the package is loaded before the class:
     \RequirePackage{TailorSwiftBot_Nov_2026}
     \documentclass{ximera}
 
+Version 2.3 adds `\xmlang{el}{...}` to mark words in another language, and
+version 2.4 makes `\xmalt{...}` after a picture its alternative text.
 From version 2.2 the package also makes `tabularray` tables (`tblr`) come out
 as tagged tables, with header rows and columns from the settings `rowhead`
 and `xmcolhead`; see Part 13 in the file.

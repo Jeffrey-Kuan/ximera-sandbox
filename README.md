@@ -17,6 +17,7 @@ your own copy of this course and publishing it as a website, step by step.
     src/intent/main.tex        test page for MathML intent (screen readers)
     src/matrices/main.tex      answer boxes inside matrices and vectors
     src/tables/main.tex        tables with header cells a screen reader can announce
+    src/showcase/main.tex      one example of every accessibility feature, for testing
     src/intent.cfg             MathJax setup for intent: \xmunits, \xmabs
     src/custom.css             site-specific styling
     static/                    hand-written pages, copied into the site as they are
