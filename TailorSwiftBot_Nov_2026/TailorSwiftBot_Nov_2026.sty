@@ -871,8 +871,14 @@
       {
         \tag_if_active:T
           {
-            \keys_if_exist:nnT { tikz / tagging } { alt }
-              { \keys_set:nn { tikz / tagging } { alt = { Picture~without~a~description } } }
+            % The setting has had different names: a tikz key
+            % "tagging-setup/alt" from LaTeX 2026 on, an l3keys key before.
+            \pgfkeysifdefined { /tikz/tagging-setup/alt/.@cmd }
+              { \tikzset { tagging-setup/alt = { Picture~without~a~description } } }
+              {
+                \keys_if_exist:nnT { tikz / tagging } { alt }
+                  { \keys_set:nn { tikz / tagging } { alt = { Picture~without~a~description } } }
+              }
           }
       }
   }
