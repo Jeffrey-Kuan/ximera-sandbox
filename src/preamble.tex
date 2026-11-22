@@ -11,9 +11,10 @@
 %% latex/ximera-components.sty.
 \usepackage{ximera-components}
 
-%% Accessible tables with the tabularray package: header cells, caption and
-%% summary. The file is latex/xmtable.sty.
-\usepackage{xmtable}
+%% Tables with the tabularray package. The settings rowhead, xmcolhead,
+%% caption and summary make their header cells known to screen readers, on
+%% the web page and in the tagged PDF.
+\usepackage{tabularray}
 
 \newcommand{\RR}{\mathbb{R}}
 \newcommand{\dfn}{\textit}

@@ -22,7 +22,7 @@ your own copy of this course and publishing it as a website, step by step.
     static/                    hand-written pages, copied into the site as they are
     latex/ximera-components.sty  loads \answer, multipleChoice, hint and the other interactive pieces
     latex/xm-a11y.4ht            web accessibility of foldable, expandable, hint, theorems, footnotes
-    latex/xmtable.sty            accessible tabularray tables: rowhead, xmcolhead, caption, summary
+    latex/xm-table.4ht           accessible tabularray tables on the web: rowhead, xmcolhead, caption, summary
     static/answer-a11y.js      screen reader support for \answer boxes, loaded on every page
     static/choice-a11y.js      ordinary radio buttons and checkboxes for \choice
     static/collapse-a11y.js    opens and closes expandable, accordion and hint
@@ -70,7 +70,7 @@ print normally puts on the correct `\choice` is left out as well.
 A `tblr` table (tabularray) is typeset in the PDF as a `tabular`, because
 LaTeX can tag those: its cells become table cells with header rows and
 columns taken from `rowhead` and `xmcolhead`. The author's table is not
-changed; `latex/xmtable.sty` does the conversion.
+changed; `TailorSwiftBot_Nov_2026.sty` does the conversion.
 
 ## Editing in a Codespace
 

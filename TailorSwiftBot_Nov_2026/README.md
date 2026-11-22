@@ -22,6 +22,10 @@ With the Ximera class the package is loaded before the class:
     \RequirePackage{TailorSwiftBot_Nov_2026}
     \documentclass{ximera}
 
+From version 2.2 the package also makes `tabularray` tables (`tblr`) come out
+as tagged tables, with header rows and columns from the settings `rowhead`
+and `xmcolhead`; see Part 13 in the file.
+
 The package is `TailorSwiftBot_Nov_2026.sty` in this folder. Put it next to
 your document, or anywhere LaTeX looks for packages. The comments at the top
 of the file describe every command and explain why this version exists.

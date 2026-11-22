@@ -26,6 +26,7 @@
 %%   \xmvec{v}  \xmvec*{v}   \xmunitvec{v}  \xmunitvec*{v}
 %%   \xmdot{u}{v}   \xmcross{u}{v}
 %%   \xmblank[<width>]   \xmblankspoken{<words>}
+%% and, for tabularray tables, the settings xmcolhead, caption and summary.
 %%
 %% Not carried over: the parts of TailorSwiftBot.sty about PDF structure
 %% (theorem heads as headings, title as H1). They have no meaning here; the
@@ -144,5 +145,24 @@
       { \mode_leave_vertical: \rule [ -.2ex ] {#1} { .4pt } }
   }
 
+\ExplSyntaxOff
+
+%% ---- tables ------------------------------------------------------------------
+%% Settings for tabularray tables (tblr): xmcolhead, caption and summary,
+%% next to tabularray's own rowhead.  They are defined here as soon as the
+%% document loads tabularray.  On the web page latex/xm-table.4ht turns them
+%% into <th scope=...> and <caption>; in the untagged PDF they change
+%% nothing.  (In the tagged PDF TailorSwiftBot_Nov_2026.sty defines the same
+%% settings and typesets the table as a tagged tabular.)
+\ExplSyntaxOn
+\AddToHook { package/tabularray/after }
+  {
+    \__tblr_keys_define:nn { table/inner }
+      {
+        xmcolhead .code:n = \__tblr_keys_gput:nn { xmcolhead } {#1},
+        caption   .code:n = \__tblr_keys_gput:nn { caption } {#1},
+        summary   .code:n = \__tblr_keys_gput:nn { summary } {#1},
+      }
+  }
 \ExplSyntaxOff
 \endinput

@@ -212,7 +212,7 @@ mjx-mtd [id^="ximera-placeholder"] {
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title) { margin-right: 0; }
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title)::after { content: none; }
 
-/* ---- tables (latex/xmtable.sty, latex/xm-table.4ht) ---- */
+/* ---- tables (latex/xm-table.4ht) ---- */
 table.tabularray caption {
   caption-side: top;
   padding: 0 0 0.4em;

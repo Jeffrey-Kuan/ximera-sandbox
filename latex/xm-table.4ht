@@ -1,8 +1,9 @@
 %% xm-table.4ht
 %%
-%% Web page side of xmtable.sty: header cells, caption and summary for
+%% Web page side of the table settings (xmcolhead, caption, summary, defined
+%% in xmintent.sty): header cells, caption and summary for
 %% tabularray tables.  Applied by ximera-components.4ht at the end of
-%% \begin{document}, and only when xmtable is loaded.
+%% \begin{document}, and only when tabularray is loaded.
 %%
 %% tex4ht already writes a cell in a rowhead row as <th>.  This file adds
 %% what a screen reader needs to tie a data cell to its headers:
