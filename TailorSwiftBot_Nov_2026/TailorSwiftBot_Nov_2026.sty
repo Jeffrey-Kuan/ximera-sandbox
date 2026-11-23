@@ -50,7 +50,7 @@
 %%   Works in text or math mode.  Without luamml it just typesets the unit.
 %%   Powers work:  \xmunits{m}^2  gives <msup><mi intent=":unit">m</mi><mn>2</mn></msup>.
 %%   For compound units write each part separately:  \xmunits{m}/\xmunits{s}.
-%%   \xmdeg  is  \xmunits{\textdegree}:  90\xmdeg  prints 90° with the unit intent.
+%%   \xmdeg  is the degree sign as a unit:  90\xmdeg  prints 90° with the unit intent.
 %%
 %% Part 2: theorem heads as heading levels
 %%   "Theorem 1 (Name)." is tagged H<n>, one level below the heading level of
@@ -132,13 +132,12 @@
 %%   Greek, fr French, de German, es Spanish, la Latin, ru Russian, zh
 %%   Chinese, ...  For text inside one paragraph, not for whole paragraphs.
 %%   Note that babel's \foreignlanguage does not set this mark.
-%%   The command marks the language only.  The letters also need a font that
-%%   has them; the default font has no Greek or Cyrillic.  For Greek, put in
-%%   the preamble:
-%%       \usepackage[english]{babel}
-%%       \babelprovide[import, onchar=ids fonts]{greek}
-%%       \babelfont[greek]{rm}{CMU Serif}
-%%   and Greek letters typed anywhere are set in that font by themselves.
+%%   Greek and Cyrillic: the default font has neither alphabet.  For a
+%%   language written in one of them (el, grc, ru, uk, be, bg, sr, mk, kk,
+%%   ky, mn, tg) \xmlang sets its text in CMU Serif, which has both and
+%%   matches the default font, so \xmlang{uk}{Михайло Кравчук} just works
+%%   (LuaLaTeX).  Change the font by redefining \xmlangfont.  Other scripts
+%%   (Chinese, Arabic, Hebrew, ...) need a font you set up yourself.
 %%
 %% Part 15: \xmalt{<description>}  alternative text for a picture
 %%   \includegraphics[width=4in]{photo.png}
@@ -160,7 +159,7 @@
 %%   property, MathCAT versions that do not know these names read them as a
 %%   function call: "composed with of f comma g", "inverse of f".
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.4 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables, language marks, alt text for pictures]
+\ProvidesPackage{TailorSwiftBot_Nov_2026}[2026/11/22 v2.5 Units and math intents, theorem heads as headings, title as H1, fill-in blanks, Ximera class support, tabularray tables, language marks, alt text for pictures]
 \newif\ifTailorSwiftBot@titlemap \TailorSwiftBot@titlemaptrue
 \DeclareOption{notitlemap}{\TailorSwiftBot@titlemapfalse}
 \ProcessOptions\relax
@@ -249,8 +248,25 @@
   }
 
 % \xmdeg : the degree sign as a unit, 90\xmdeg -> 90° tagged <mi intent=":unit">°</mi>.
-% Uses the kernel's \textdegree, so no extra package and nothing to paste in.
-\NewDocumentCommand \xmdeg { } { \xmunits { \textdegree } }
+% The sign has to be a real character of a math font: the upright math font
+% that \xmunits uses for letters has no degree sign, and \textdegree is not
+% allowed in math, so "90\xmunits{\textdegree}" tagged the sign but printed
+% nothing.  Here the sign is taken from the text font, declared as a math
+% symbol, which prints it and keeps it inside its own <mi>.
+\cs_if_exist:cTF { T@TU }
+  {
+    \DeclareSymbolFont { tsbtext } { TU } { lmr } { m } { n }
+    \DeclareMathSymbol { \tsb@degsym } { \mathord } { tsbtext } { "B0 }
+    \cs_new_protected:Npn \__tsb_deg:
+      {
+        \cs_if_exist:NTF \luamml_attribute:een
+          { \luamml_attribute:een { intent } { :unit } { { \tsb@degsym } } }
+          { \tsb@degsym }
+      }
+    \NewDocumentCommand \xmdeg { }
+      { \mode_if_math:TF { \__tsb_deg: } { \( \__tsb_deg: \) } }
+  }
+  { \NewDocumentCommand \xmdeg { } { \xmunits { \textdegree } } }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Part 2: theorem heads as heading levels
@@ -771,6 +787,40 @@
 % content around the Span and does nothing when no marked content is open.
 % In math mode, and without tagging, the text is typeset unchanged.
 
+% Greek and Cyrillic letters.  The default text font has neither.  For a
+% language written in one of those scripts, \xmlang sets its text in CMU
+% Serif, the Computer Modern design with Greek and Cyrillic added, which is
+% part of TeX Live.  (LuaLaTeX only.)  To use another font, redefine
+% \xmlangfont, for example \renewcommand\xmlangfont{\fontfamily{...}\selectfont},
+% or make it empty when the document's own font already has the letters.
+\bool_lazy_and:nnT { \sys_if_engine_luatex_p: } { \cs_if_exist_p:c { T@TU } }
+  {
+    \DeclareFontFamily { TU } { tsbcmu } { }
+    \DeclareFontShape { TU } { tsbcmu } { m }  { n }  { <-> "[cmunrm.otf]:mode=node;+tlig;" } { }
+    \DeclareFontShape { TU } { tsbcmu } { m }  { it } { <-> "[cmunti.otf]:mode=node;+tlig;" } { }
+    \DeclareFontShape { TU } { tsbcmu } { b }  { n }  { <-> "[cmunbx.otf]:mode=node;+tlig;" } { }
+    \DeclareFontShape { TU } { tsbcmu } { b }  { it } { <-> "[cmunbi.otf]:mode=node;+tlig;" } { }
+    \DeclareFontShape { TU } { tsbcmu } { bx } { n }  { <-> ssub * tsbcmu/b/n } { }
+    \DeclareFontShape { TU } { tsbcmu } { bx } { it } { <-> ssub * tsbcmu/b/it } { }
+    \DeclareFontShape { TU } { tsbcmu } { m }  { sl } { <-> ssub * tsbcmu/m/it } { }
+  }
+\NewDocumentCommand \xmlangfont { }
+  { \cs_if_exist:cT { TU+tsbcmu } { \fontfamily { tsbcmu } \selectfont } }
+\seq_new:N \l__tsb_lang_seq
+\cs_new_protected:Npn \__tsb_lang_text:nn #1 #2
+  {
+    % the part of the code before any hyphen: "el" from "el-GR"
+    \seq_set_split:Nnn \l__tsb_lang_seq { - } {#1}
+    \str_case_e:nnTF { \seq_item:Nn \l__tsb_lang_seq { 1 } }
+      {
+        { el } { } { grc } { }
+        { ru } { } { uk } { } { be } { } { bg } { } { sr } { } { mk } { }
+        { kk } { } { ky } { } { mn } { } { tg } { }
+      }
+      { \group_begin: \xmlangfont #2 \group_end: }
+      { #2 }
+  }
+
 % \xmlang{<language code>}{<text>}
 \NewDocumentCommand \xmlang { m m }
   {
@@ -783,12 +833,12 @@
             \tag_mc_end_push:
             \tag_struct_begin:n { tag = Span , lang = #1 }
             \tag_mc_begin:n { tag = Span }
-            #2
+            \__tsb_lang_text:nn {#1} {#2}
             \tag_mc_end:
             \tag_struct_end:
             \tag_mc_begin_pop:n { }
           }
-          { #2 }
+          { \__tsb_lang_text:nn {#1} {#2} }
       }
   }
 
