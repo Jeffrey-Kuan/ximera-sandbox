@@ -133,6 +133,28 @@ mjx-mtd [id^="ximera-placeholder"] {
   cursor: default;
 }
 
+/* \wordChoice, the drop-down list inside a sentence (goes with
+   static/word-choice-a11y.js). */
+
+/* The choice the arrow keys or the pointer are on. */
+.ximera-word-option.xm-active {
+  background: #dfe9ff;
+  outline: 2px solid #1a5fb4;
+  outline-offset: -2px;
+}
+
+/* Right and wrong are otherwise shown by colour alone. Add a mark. */
+.word-choice[data-state~="correct"] .ximera-word-select__arrow,
+.word-choice[data-state~="attempted"] .ximera-word-select__arrow {
+  font-size: 0.85em;
+  opacity: 1;
+}
+.word-choice[data-state~="correct"] .ximera-word-select__arrow::before { content: "\2713\00a0"; }
+.word-choice[data-state~="attempted"] .ximera-word-select__arrow::before {
+  content: "\2717\00a0";
+  color: var(--ximera-color-incorrect, #c62828);
+}
+
 /* ---- foldable, expandable, accordion, hint, theorem headings ----
    Markup from latex/xm-a11y.4ht, behaviour from static/collapse-a11y.js. */
 

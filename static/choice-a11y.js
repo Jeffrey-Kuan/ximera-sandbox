@@ -31,7 +31,8 @@ live.setAttribute('aria-atomic', 'true');
 document.body.append(live);
 
 let clearTimer;
-function announce(sentence) {
+// Also used by word-choice-a11y.js.
+export function announce(sentence) {
   clearTimeout(clearTimer);
   live.textContent = '';
   setTimeout(() => { live.textContent = sentence; }, 50);

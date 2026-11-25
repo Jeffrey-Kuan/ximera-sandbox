@@ -298,6 +298,11 @@ document.addEventListener('click', (event) => {
 // Ordinary radio buttons for \choice; see choice-a11y.js.
 import(new URL('choice-a11y.js', import.meta.url).href);
 
+// ---- word choice -------------------------------------------------------------
+// A named, keyboard-friendly drop-down list for \wordChoice; see
+// word-choice-a11y.js.
+import(new URL('word-choice-a11y.js', import.meta.url).href);
+
 // ---- expandable, accordion, hint -------------------------------------------
 // Headings with a button that opens and closes the panel; see
 // collapse-a11y.js.

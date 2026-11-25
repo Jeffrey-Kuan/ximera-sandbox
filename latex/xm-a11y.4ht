@@ -213,4 +213,10 @@ template,warning\do{%
             \textcolor{fncolor}{(#1)}%
         \HCode{</span></span>}
     }
+%% wordChoice: the drop-down list carries the name a screen reader gives it
+%% (\xmaWordChoiceWord), which static/word-choice-a11y.js puts on the list.
+%% Otherwise as in ximera-word-choice.4ht.
+\ConfigureEnv{multipleChoice@}{\stepcounter{identification}\IgnorePar\HCode{<span class="word-choice" data-xm-label="\xmaWordChoiceWord" id="word-choice\arabic{identification}">}}{\HCode{</span>}\IgnoreIndent}{}{}
+
+
 \endinput
