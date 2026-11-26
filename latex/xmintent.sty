@@ -22,6 +22,7 @@
 %%   \xmabs{x}   \xmdet{A}   \xmcard{A}   \xmnorm[<concept>]{v}
 %%   \xmpoint{2,5}   \xminterval{[a,b)}
 %%   \xmnewfunction[<spoken-name>]{\cmd}{<symbol>}   then \cmd, \cmd[f], \cmd[f](t)
+%%   \xmnewsymbol[<spoken-name>]{\cmd}{<symbol>}     then \cmd
 %%   \xmfunction{R}(x)   \xmcompose{f}{g}(x)   \xminv{f}(x)   \xmtrans[T]{A}
 %%   \xmvec{v}  \xmvec*{v}   \xmunitvec{v}  \xmunitvec*{v}
 %%   \xmdot{u}{v}   \xmcross{u}{v}
@@ -101,6 +102,14 @@
 % learns the new command. An empty first argument means "no spoken name".
 \NewDocumentCommand \xmnewfunction { O{} m m }
   { \newcommand {#2} { \xmfn {#1} {#3} } }
+
+% \xmsym{<spoken-name>}{<symbol>} is what a command made with \xmnewsymbol
+% stands for: the symbol, read as its spoken name.  As with \xmnewfunction,
+% the \newcommand is meant to be copied to the web page, and an empty first
+% argument means "no spoken name".
+\NewDocumentCommand \xmsym { m m } { {#2} }
+\NewDocumentCommand \xmnewsymbol { O{} m m }
+  { \newcommand {#2} { \xmsym {#1} {#3} } }
 
 \NewDocumentCommand \xmfunction { m d() }
   { #1 \IfValueT {#2} { ( #2 ) } }

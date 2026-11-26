@@ -22,6 +22,8 @@ With the Ximera class the package is loaded before the class:
     \RequirePackage{TailorSwiftBot_Nov_2026}
     \documentclass{ximera}
 
+Version 2.6 adds `\xmnewsymbol[Y-conjugate-transpose]{\Yct}{Y^*}`: a symbol
+with a spoken name of the author's choosing.
 Version 2.3 adds `\xmlang{el}{...}` to mark words in another language, and
 version 2.4 makes `\xmalt{...}` after a picture its alternative text.
 From version 2.2 the package also makes `tabularray` tables (`tblr`) come out
