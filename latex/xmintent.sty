@@ -104,12 +104,52 @@
   { \newcommand {#2} { \xmfn {#1} {#3} } }
 
 % \xmsym{<spoken-name>}{<symbol>} is what a command made with \xmnewsymbol
-% stands for: the symbol, read as its spoken name.  As with \xmnewfunction,
-% the \newcommand is meant to be copied to the web page, and an empty first
-% argument means "no spoken name".
+% stands for: the symbol, read as its spoken name.  An empty first argument
+% means "no spoken name".
+%
+% MathJax has to learn the new command.  For \xmnewfunction a \newcommand
+% does that, because Ximera copies every \newcommand to the web page.  But
+% the build (tex4npm) leaves out any \newcommand whose line contains one of
+% the characters * : @, and a symbol such as Y^* contains one; the command
+% would then be undefined on the page.  So the definitions made with
+% \xmnewsymbol are collected and written to the page from here, at the start
+% of the page's body, as a hidden formula that MathJax reads before any
+% other.  (\NewDocumentCommand is not copied by Ximera, so nothing is
+% defined twice.)  At the end of \begin{document} tex4ht has read its
+% settings but has not yet written the top of the page, so this is the
+% moment to add something to the start of the body (\Configure{@BODY}).
 \NewDocumentCommand \xmsym { m m } { {#2} }
-\NewDocumentCommand \xmnewsymbol { O{} m m }
-  { \newcommand {#2} { \xmsym {#1} {#3} } }
+\tl_new:N \g__xmi_sym_defs_tl
+\str_new:N \g__xmi_sym_defs_str
+\cs_if_exist:NTF \HCode
+  {
+    \NewDocumentCommand \xmnewsymbol { O{} m m }
+      {
+        \NewDocumentCommand #2 { } { \xmsym {#1} {#3} }
+        \tl_gput_right:Nn \g__xmi_sym_defs_tl
+          { \newcommand {#2} { \xmsym {#1} {#3} } }
+      }
+    \AddToHook { begindocument/end }
+      {
+        \tl_if_empty:NF \g__xmi_sym_defs_tl
+          {
+            % as text of an HTML page: & and < must be written as entities
+            \str_gset:NV \g__xmi_sym_defs_str \g__xmi_sym_defs_tl
+            \str_greplace_all:Nnn \g__xmi_sym_defs_str { & } { &amp; }
+            \str_greplace_all:Nnn \g__xmi_sym_defs_str { < } { &lt; }
+            \Configure { @BODY }
+              {
+                \HCode { <div~class="xmintent-macros"~style="display:none"> }
+                \HCode { \tl_to_str:n { \( } \g__xmi_sym_defs_str \tl_to_str:n { \) } }
+                \HCode { </div> }
+              }
+          }
+      }
+  }
+  {
+    \NewDocumentCommand \xmnewsymbol { O{} m m }
+      { \NewDocumentCommand #2 { } { \xmsym {#1} {#3} } }
+  }
 
 \NewDocumentCommand \xmfunction { m d() }
   { #1 \IfValueT {#2} { ( #2 ) } }
