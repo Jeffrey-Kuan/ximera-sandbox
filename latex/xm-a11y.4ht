@@ -162,6 +162,42 @@ notation,model,observation,proposition,paradox,procedure,remark,summary,%
 template,warning\do{%
   \@ifundefined{\xma@env}{}{\expandafter\ConfigureTheoremEnv\expandafter{\xma@env}}}
 
+%% ---- problem, exercise, question, exploration ---------------------------------
+%% The same for the question environments: a real heading ("Problem") as the
+%% first thing in the box, at the level that fits.  The npm styles print the
+%% word with CSS, so heading navigation in a screen reader passed over every
+%% problem.  A page can have many problems, and a list of headings that all
+%% say "Problem" is of little use, so each heading also carries a number
+%% that only a screen reader gets: it reads "Problem 3" and shows "Problem."
+%% as before.  Each kind of environment is counted on its own, through the
+%% page.  The box (role "article") is named after its heading.
+%% Everything else is as in ximera.4ht.
+\renewcommand{\ConfigureQuestionEnv}[2]{%
+\@ifundefined{c@xmaQ@#1}{\newcounter{xmaQ@#1}}{}%
+\renewenvironment{#1}{}{}%
+\ConfigureEnv{#1}
+  {\def\problemNumDisp{}%
+   \stepcounter{identification}\stepcounter{xmaQ@#1}%
+   \ifvmode\IgnorePar\fi\EndP
+   \HCode{<div role="article" class="problem-environment #1" id="problem\arabic{identification}" aria-labelledby="problem\arabic{identification}-heading" numbered=" \problemNumDisp" titletext=" \GetTranslation{#2}">\Hnewline<h\xmheadlevel\space class="problem-heading" id="problem\arabic{identification}-heading">}\xma@thmname{#1}\HCode{<span class="ximera-sr-only"> \arabic{xmaQ@#1}</span></h\xmheadlevel>}%
+   \stepcounter{xmHeadOffset}}
+  {\addtocounter{xmHeadOffset}{-1}%
+   \stepcounter{problem@Depth}%
+   \ifcsname c@depth\Roman{problem@Depth}Count\endcsname
+   \expandafter\ifnum\expandafter\value{depth\Roman{problem@Depth}Count}>0
+   \expandafter\setcounter{depth\Roman{problem@Depth}Count}{0}%
+   \fi
+   \fi
+   \addtocounter{problem@Depth}{-2}%
+   \ifvmode\IgnorePar\fi\EndP
+   \HCode{</div>}\IgnoreIndent}
+  {}{}%
+}
+\ConfigureQuestionEnv{problem}{Problem}
+\ConfigureQuestionEnv{exercise}{Exercise}
+\ConfigureQuestionEnv{question}{Question}
+\ConfigureQuestionEnv{exploration}{Exploration}
+
 %% ---- footnotes ---------------------------------------------------------------
 %% The marker is a button with a name ("Footnote 1"), aria-expanded kept in
 %% step with the note, and aria-controls pointing at it.  The click target is

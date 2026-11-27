@@ -241,6 +241,21 @@ mjx-mtd [id^="ximera-placeholder"] {
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title) { margin-right: 0; }
 .theorem-like > .theorem-like-heading:has(~ .theorem-like-title)::after { content: none; }
 
+/* Problem, exercise, question, exploration: the same. The word is a real
+   heading (latex/xm-a11y.4ht); it also holds a number that only a screen
+   reader gets ("Problem 3"). Switch off the word that Ximera prints with
+   CSS, and make the heading look like that word did. */
+.problem-environment:has(> .problem-heading)::before { content: none; }
+.problem-environment > .problem-heading {
+  display: inline;
+  margin: 0 0.4em 0 0;
+  font-family: var(--ximera-font-sans, sans-serif);
+  font-size: 0.95em;
+  font-weight: 700;
+  color: var(--ximera-color-env-problem);
+}
+.problem-environment > .problem-heading::after { content: "."; }
+
 /* ---- tables (latex/xm-table.4ht) ---- */
 table.tabularray caption {
   caption-side: top;
