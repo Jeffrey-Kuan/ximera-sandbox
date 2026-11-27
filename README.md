@@ -26,6 +26,7 @@ your own copy of this course and publishing it as a website, step by step.
     latex/xm-table.4ht           accessible tabularray tables on the web: rowhead, xmcolhead, caption, summary
     static/answer-a11y.js      screen reader support for \answer boxes, loaded on every page
     static/choice-a11y.js      ordinary radio buttons and checkboxes for \choice
+    static/check-button-a11y.js the Check button says "Correct" or "Incorrect" once an answer is checked
     static/word-choice-a11y.js a named, keyboard-friendly drop-down list for \wordChoice
     static/collapse-a11y.js    opens and closes expandable, accordion and hint
     static/alt-a11y.js         gives pictures their \xmalt description as real alt text

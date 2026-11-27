@@ -29,6 +29,10 @@
 //     of its Check button ("answer, row 1, column 2"), and to the feedback
 //     ("Row 1, column 2: 20 is not correct").
 
+// The Check button says "Correct" or "Incorrect" once the answer has been
+// checked; see check-button-a11y.js.
+import { describeCheckButton } from './check-button-a11y.js';
+
 // The parser that turns typed text into LaTeX. It is the one the answer box
 // uses, in the same version, but that copy is sealed inside ximera.js, so a
 // second copy is fetched the first time it is needed.
@@ -84,7 +88,8 @@ function expose(container) {
     if (!where) continue;
     group.dataset.position = where;
     setName(group.querySelector('.ximera-answer-input'), `answer, ${where}`);
-    setName(group.querySelector('.ximera-check-btn'), `check work, ${where}`);
+    // The button's name also carries the result; see check-button-a11y.js.
+    describeCheckButton(group.querySelector('.ximera-check-btn'), 'check work', where);
   }
   // Every element between the formula's container and an answer box.
   const chain = new Set();
