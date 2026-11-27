@@ -257,3 +257,14 @@ table.tabularray .xm-table-summary {
 table.tabularray th,
 table.tabularray td { padding: 0.25em 0.6em; }
 table.tabularray th { font-weight: 600; background: #f4f4f4; }
+
+/* The blue of the Check button, the "?" button of an answer box and the
+   other things Ximera draws in its main colour. Ximera's own blue, #2196f3,
+   gives white text on it a contrast of 3.1 to 1, and the button 2.9 to 1
+   against the page: both under what WCAG asks (4.5 for text, 3 for the
+   outline of a control). These give 6.3 and 5.9; with the pointer on the
+   button, 8.8 and 8.2. */
+:root {
+  --ximera-color-primary: #1a5fb4;
+  --ximera-color-primary-hover: #134a8e;
+}
