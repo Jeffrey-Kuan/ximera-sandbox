@@ -133,6 +133,13 @@ mjx-mtd [id^="ximera-placeholder"] {
   cursor: default;
 }
 
+/* Ximera draws a box of its own (the character "☐", or "☑" when chosen) in
+   front of each select-all choice. Once the real checkbox is there, that
+   makes two boxes per choice; keep only the real one. */
+.select-all .choice:has(.xm-choice-input)::before {
+  content: none;
+}
+
 /* \wordChoice, the drop-down list inside a sentence (goes with
    static/word-choice-a11y.js). */
 
