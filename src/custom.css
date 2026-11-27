@@ -268,3 +268,58 @@ table.tabularray th { font-weight: 600; background: #f4f4f4; }
   --ximera-color-primary: #1a5fb4;
   --ximera-color-primary-hover: #134a8e;
 }
+
+/* \wordChoice with nothing chosen yet. The box is filled almost like the
+   page, so its border is what shows that it is a control; Ximera's grey
+   gives 2.7 to 1 against the page, under the 3 to 1 that WCAG asks. This
+   grey gives 4.3. The small arrow gets darker with it. The red and green
+   borders of a checked answer are set by more specific rules and stay. */
+.word-choice .ximera-word-select {
+  border-color: #767676;
+}
+.word-choice .ximera-word-select__arrow {
+  opacity: 0.8;
+}
+
+/* selectAll: a square box, as is usual for "more than one answer", where
+   the browser's own checkbox has rounded corners. The box is still the
+   real checkbox (keyboard and screen reader are unchanged); only its
+   drawing is replaced. */
+.select-all .xm-choice-input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  border: 2px solid #555;
+  border-radius: 0;
+  background: #fff;
+}
+.select-all .xm-choice-input:checked {
+  background: #1a5fb4;
+  border-color: #1a5fb4;
+}
+/* The check mark: two sides of a small rectangle, turned 45 degrees. */
+.select-all .xm-choice-input:checked::after {
+  content: "";
+  width: 0.28em;
+  height: 0.58em;
+  margin-top: -0.12em;
+  border: solid #fff;
+  border-width: 0 0.15em 0.15em 0;
+  transform: rotate(45deg);
+}
+/* Can no longer be changed (the question is solved). */
+.select-all .xm-choice-input:disabled {
+  border-color: #767676;
+}
+.select-all .xm-choice-input:disabled:checked {
+  background: #767676;
+}
+/* Windows high contrast mode replaces all colours; let it draw its own box. */
+@media (forced-colors: active) {
+  .select-all .xm-choice-input {
+    -webkit-appearance: auto;
+    appearance: auto;
+  }
+  .select-all .xm-choice-input:checked::after { content: none; }
+}
