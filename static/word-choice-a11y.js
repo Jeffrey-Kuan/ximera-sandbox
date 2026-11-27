@@ -22,9 +22,9 @@
 //     the preamble changes it);
 //   * the keyboard focus stays on the list itself while the arrow keys move
 //     through the choices (aria-activedescendant), so it cannot be lost;
-//   * Enter, Space or the arrow keys open the list; arrow keys, Home, End or
-//     a typed letter move; Enter or Space choose; Escape or Tab close
-//     without choosing;
+//   * Enter, Space, the arrow keys or Alt+Down open the list; arrow keys,
+//     Home, End or a typed letter move; Enter or Space choose; Escape, Tab
+//     or Alt+Up close without choosing;
 //   * "Correct." or "Incorrect. Try another choice." is spoken after a
 //     choice, and "correct" or "incorrect" stays attached to the list as its
 //     description;
@@ -124,9 +124,17 @@ function upgrade(el) {
   el.addEventListener('keydown', (e) => {
     if (!widget.contains(e.target)) return;
     e.stopPropagation();                     // Ximera's key handling is replaced
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey) return;
     if (isLocked()) return;
     const key = e.key;
+    if (e.altKey) {
+      // The usual Windows keys for a drop-down list: Alt+Down opens it and
+      // Alt+Up closes it. Closing does not choose, since choosing here is
+      // also what gets the answer checked.
+      if (key === 'ArrowDown' && !isOpen()) { e.preventDefault(); open(); }
+      else if (key === 'ArrowUp' && isOpen()) { e.preventDefault(); close(); }
+      return;
+    }
     const letter = key.length === 1 && key !== ' ';
 
     if (!isOpen()) {
