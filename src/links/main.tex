@@ -1,0 +1,84 @@
+\documentclass{ximera}
+\input{../preamble.tex}
+
+\title{Links Within a Page}
+
+\begin{document}
+\begin{abstract}
+Cross-references and citations: what each link says and where it takes you.
+\end{abstract}
+\maketitle
+
+This page exists to be tested. Each link in the last section should say a
+number (never the name of a label such as ``eq:pythagoras''), and following
+it should move you, and the keyboard focus, to what it names. With a screen
+reader, press Enter on a link and listen: the reader should go on from the
+equation, heading, theorem, problem or entry of the bibliography it names.
+
+\section{Equations}\label{sec:equations}
+
+A single numbered equation:
+\begin{equation}\label{eq:pythagoras}
+a^2+b^2=c^2
+\end{equation}
+This sentence follows the equation in the same paragraph, and should line
+up with the rest of the text.
+
+An \texttt{align} with a label on each row:
+\begin{align}
+x + y &= 3 \label{eq:sum}\\
+x - y &= 1 \label{eq:difference}
+\end{align}
+and a display without a number:
+\[ e^{i\pi} + 1 = 0 \]
+followed by more of the same paragraph.
+
+\subsection{Statements}\label{sec:statements}
+
+\begin{theorem}\label{thm:parity}
+The sum of two even numbers is even.
+\end{theorem}
+
+\begin{lemma}[Halving]\label{lem:halving}
+Every even number is twice a whole number.
+\end{lemma}
+
+\begin{definition}\label{def:even}
+A whole number is even if it is divisible by $2$.
+\end{definition}
+
+\begin{theorem}\label{thm:second}
+The product of an even number and any whole number is even.
+\end{theorem}
+
+\section{Problems}\label{sec:problems}
+
+\begin{problem}\label{prob:add}
+What is $2+2$? $\answer{4}$
+\end{problem}
+
+\begin{problem}\label{prob:solve}
+Using equations \eqref{eq:sum} and \eqref{eq:difference}, find $x$.
+$x = \answer{2}$
+\end{problem}
+
+\section{Links}
+
+\begin{itemize}
+\item Equations: \eqref{eq:pythagoras}, \eqref{eq:sum} and
+  \eqref{eq:difference}; without parentheses, \ref{eq:pythagoras}.
+\item Sections: Section~\ref{sec:equations}, Subsection~\ref{sec:statements}
+  and Section~\ref{sec:problems}.
+\item Statements: Theorem~\ref{thm:parity}, Lemma~\ref{lem:halving},
+  Definition~\ref{def:even} and Theorem~\ref{thm:second}.
+\item Problems: Problem~\ref{prob:add} and Problem~\ref{prob:solve}.
+\item Citations: \cite{Szego}; with a note, \cite[Theorem 8.1.1]{Szego};
+  two at once, \cite{Szego,Knuth}.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{Knuth} D. E. Knuth, \emph{The \TeX book}, Addison--Wesley, 1984.
+\bibitem{Szego} G. Szeg\H{o}, \emph{Orthogonal Polynomials}, 4th edition,
+  American Mathematical Society, 1975.
+\end{thebibliography}
+\end{document}

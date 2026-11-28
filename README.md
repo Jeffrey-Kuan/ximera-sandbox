@@ -23,6 +23,7 @@ your own copy of this course and publishing it as a website, step by step.
     static/                    hand-written pages, copied into the site as they are
     latex/ximera-components.sty  loads \answer, multipleChoice, hint and the other interactive pieces
     latex/xm-a11y.4ht            web accessibility of foldable, expandable, hint, theorems, footnotes
+    latex/xm-links.4ht           section numbers in \ref; a paragraph after display math
     latex/xm-table.4ht           accessible tabularray tables on the web: rowhead, xmcolhead, caption, summary
     static/answer-a11y.js      screen reader support for \answer boxes, loaded on every page
     static/choice-a11y.js      ordinary radio buttons and checkboxes for \choice
@@ -30,6 +31,7 @@ your own copy of this course and publishing it as a website, step by step.
     static/word-choice-a11y.js a named, keyboard-friendly drop-down list for \wordChoice
     static/collapse-a11y.js    opens and closes expandable, accordion and hint
     static/alt-a11y.js         gives pictures their \xmalt description as real alt text
+    static/links-a11y.js       equation numbers in \ref and \eqref; links move the focus to their target
     static/answer-box/         the stock answer box on its own page, without (before)
                                and with (after) MathJax's assistive MathML
     latex/xmintent.sty         the \xm... commands for LaTeX (web version of TailorSwiftBot.sty)

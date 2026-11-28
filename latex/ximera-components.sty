@@ -47,5 +47,11 @@ free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
 %% The name a screen reader gives the drop-down list of \wordChoice.
 \newcommand{\xmaWordChoiceWord}{Choose the missing word}
 
+%% For latex/xm-links.4ht: on the web page, \label writes to the .aux file
+%% what kind of thing it names (section, equation, ...), as \xmlk@type.
+%% Defined here, for the PDF as well, because the .aux file is read before
+%% the web page's own settings are.
+\providecommand{\xmlk@type}[2]{\global\@namedef{xmlk@t@#1}{#2}}
+
 \let\@argdef\xmcomp@savedargdef
 \endinput

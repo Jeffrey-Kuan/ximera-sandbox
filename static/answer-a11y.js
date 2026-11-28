@@ -317,3 +317,8 @@ import(new URL('collapse-a11y.js', import.meta.url).href);
 // The description from \xmalt as the picture's real alternative text; see
 // alt-a11y.js.
 import(new URL('alt-a11y.js', import.meta.url).href);
+
+// ---- links within the page --------------------------------------------------
+// Equation numbers as link text, and the focus moved to a link's target; see
+// links-a11y.js.
+import(new URL('links-a11y.js', import.meta.url).href);

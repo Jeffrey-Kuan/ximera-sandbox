@@ -1,0 +1,78 @@
+%% xm-links.4ht
+%%
+%% Cross-references and display math on the web page.
+%%
+%% Applied by ximera-components.4ht, for the web page only (tex4ht); the PDF
+%% is not affected.  The matching script is static/links-a11y.js.
+%%
+%% What changes on the web page:
+%%   * \ref to a section (or subsection, ...) shows the section's number,
+%%     as in the PDF, instead of the name of the label ("sec:intro").
+%%     LaTeX knows that number from the .aux file of the previous pass.
+%%   * \ref and \eqref to an equation are left to static/links-a11y.js:
+%%     MathJax numbers the equations on the page, including each row of an
+%%     align, and the script takes the number and the place from MathJax.
+%%   * \ref to a theorem, lemma, ..., or a problem, exercise, ... shows its
+%%     number, which the page now shows in the heading (latex/xm-a11y.4ht).
+%%   * Text that follows a display (equation, align, \[ \]) in the same
+%%     paragraph is put in a paragraph of its own.  Before, it was loose
+%%     text between two blocks, outside the column of text.
+
+%% ---- what kind of thing each label names ------------------------------------
+%% \label also writes the counter that was last stepped (\@currentcounter:
+%% section, equation, problem, ...) to the .aux file, as \xmlk@type, which
+%% ximera-components.sty defines.  \ref reads it on the next pass.
+\let\xmlk@oldlabel\label
+\renewcommand{\label}[1]{%
+  \xmlk@oldlabel{#1}%
+  \ifdefined\@currentcounter
+    \protected@write\@auxout{}{\string\xmlk@type{#1}{\@currentcounter}}%
+  \fi}
+
+%% Every kind of label but an equation gets LaTeX's number.  An equation keeps
+%% the label's name until the script replaces it with MathJax's number:
+%% LaTeX's count can differ from MathJax's (an align counts once for LaTeX).
+%%
+%% Under tex4ht the first part of a label's entry in the .aux file reads
+%%   \rEfLiNK{x1-10001}{\csname :autoref\endcsname{section}1}
+%% that is: tex4ht's anchor, then the number. Only the number is used. The
+%% anchor is not reliable as a link target (for a subsection it differs from
+%% the id tex4ht gives the heading), so the link goes to the label's own
+%% anchor, at the start of the section; static/links-a11y.js moves the
+%% focus from there to the heading. Without tex4ht's form, the first part is
+%% the number alone.
+\def\xmlk@first#1#2\@nil{\xmlk@parse#1\rEfLiNK{}{}\@@nil}
+\def\xmlk@parse#1\rEfLiNK#2#3#4\@@nil{%
+  \def\xmlk@pre{#1}%
+  \ifx\xmlk@pre\@empty
+    \def\xmlk@text{#3}%
+  \else
+    \def\xmlk@text{#1}%
+  \fi}
+\renewcommand{\ref}[1]{%
+  \begingroup
+  \def\xmlk@text{#1}%
+  \@ifundefined{xmlk@t@#1}{}{%
+    \edef\xmlk@kind{\csname xmlk@t@#1\endcsname}%
+    \def\xmlk@equation{equation}%
+    \ifx\xmlk@kind\xmlk@equation\else
+      \@ifundefined{r@#1}{}{%
+        \expandafter\let\expandafter\xmlk@r\csname r@#1\endcsname
+        \expandafter\xmlk@first\xmlk@r\@nil}%
+    \fi}%
+  %% tex4ht's \csname :autoref\endcsname{section} would print "section".
+  \expandafter\def\csname :autoref\endcsname##1{}%
+  \HCode{<a class="reference" href="\##1">}\xmlk@text\HCode{</a>}%
+  \endgroup}
+
+%% ---- a paragraph after display math -------------------------------------------
+%% As tex4ht's own settings (html4-math.4ht), but after the display the
+%% paragraph is closed, and text that follows starts a new one, without an
+%% indent.  Nothing changes if the display ends the paragraph.
+\Configure{MathjaxBlock}
+  {\ifvmode\IgnorePar\fi\EndP\HCode{<div class="mathjax-block">}}
+  {\HCode{</div>}\par\ShowPar\IgnoreIndent}
+\Configure{MathjaxEnv}
+  {\ifvmode\IgnorePar\fi\EndP\HCode{<div class="mathjax-env mathjax-\@currenvir">}}
+  {\HCode{</div>}\par\ShowPar\IgnoreIndent}
+\endinput
