@@ -58,6 +58,11 @@ free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
 %%     of that fails ("Missing \endcsname inserted"): no PDF at all.
 %% Here the number is worked out before the item, the same way (1, 2, ...;
 %% 1.1, 1.2 for a problem inside a problem), and registered for \label.
+%% With tagging (TeX Live 2026), a \label right after an \item[...] refers
+%% to the item's whole label ("Problem 1"), so \ref printed "Problem
+%% Problem 1". So the paragraph is started right after the item (as the
+%% first text of the problem would do anyway), and the number is registered
+%% again after it.
 %% The web page does not use this code (latex/xm-a11y.4ht).
 \ifdefined\problemEnvironmentStart
   \newcommand{\xmcomp@problemnumber}{%
@@ -75,7 +80,9 @@ free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
     \xmcomp@problemnumber
     \begin{trivlist}%
     \item[\hskip\labelsep\sffamily\bfseries\GetTranslation{#2} \xmcomp@probnum]%
-    \slshape}%
+    \leavevmode
+    \let\@currentlabel\xmcomp@probnum
+    \slshape\ignorespaces}%
 \fi
 
 %% For latex/xm-links.4ht: on the web page, \label writes to the .aux file
