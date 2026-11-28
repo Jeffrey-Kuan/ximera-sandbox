@@ -47,6 +47,37 @@ free-response,hint,foldable,proof,dialogue,verbatim,video,xkcd\do{%
 %% The name a screen reader gives the drop-down list of \wordChoice.
 \newcommand{\xmaWordChoiceWord}{Choose the missing word}
 
+%% Problem numbers in the PDF (problem, exercise, question, exploration).
+%% The class works out a problem's number inside the label of a list item
+%% (\item[Problem \problemNumber]), creating and stepping counters while the
+%% label is being typeset. Two things go wrong:
+%%   * a \label inside a problem got an older number (\stepcounter, not
+%%     \refstepcounter), so \ref to the first problem said "2";
+%%   * from TeX Live 2026 on, a \label right after \begin{problem} makes
+%%     LaTeX expand the item's label, and creating a counter in the middle
+%%     of that fails ("Missing \endcsname inserted"): no PDF at all.
+%% Here the number is worked out before the item, the same way (1, 2, ...;
+%% 1.1, 1.2 for a problem inside a problem), and registered for \label.
+%% The web page does not use this code (latex/xm-a11y.4ht).
+\ifdefined\problemEnvironmentStart
+  \newcommand{\xmcomp@problemnumber}{%
+    \ifcsname c@depth\Roman{problem@Depth}Count\endcsname\else
+      \expandafter\newcounter{depth\Roman{problem@Depth}Count}%
+    \fi
+    \refstepcounter{depth\Roman{problem@Depth}Count}%
+    \edef\xmcomp@probnum{\arabic{depthICount}}%
+    \forloop{Iteration@probCnt}{2}{\arabic{Iteration@probCnt} < \numexpr \value{problem@Depth} + 1 \relax}{%
+      \edef\xmcomp@probnum{\xmcomp@probnum.\arabic{depth\Roman{Iteration@probCnt}Count}}}%
+    \let\@currentlabel\xmcomp@probnum}
+  \renewcommand{\problemEnvironmentStart}[2]{%
+    \stepcounter{problem@Depth}%
+    \def\spaceatend{#1}%
+    \xmcomp@problemnumber
+    \begin{trivlist}%
+    \item[\hskip\labelsep\sffamily\bfseries\GetTranslation{#2} \xmcomp@probnum]%
+    \slshape}%
+\fi
+
 %% For latex/xm-links.4ht: on the web page, \label writes to the .aux file
 %% what kind of thing it names (section, equation, ...), as \xmlk@type.
 %% Defined here, for the PDF as well, because the .aux file is read before
